@@ -1,0 +1,74 @@
+name: Potion
+
+options:
+  bundleIdPrefix: com.pixybyteco
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_HARDENED_RUNTIME: NO
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+
+packages:
+  SwiftTerm:
+    url: https://github.com/migueldeicaza/SwiftTerm
+    from: "1.13.0"
+
+targets:
+  PotionCore:
+    type: library.static
+    platform: macOS
+    sources:
+      - Sources/PotionCore
+    settings:
+      base:
+        DEFINES_MODULE: YES
+
+  Potion:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/Potion
+    dependencies:
+      - target: PotionCore
+      - package: SwiftTerm
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pixybyteco.potion
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        ENABLE_APP_SANDBOX: NO
+        COMBINE_HIDPI_IMAGES: YES
+
+  PotionCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/PotionCoreTests
+    dependencies:
+      - target: PotionCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pixybyteco.potion.coretests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Potion:
+    build:
+      targets:
+        Potion: all
+        PotionCoreTests: [test]
+    run:
+      config: Debug
+    test:
+      targets:
+        - PotionCoreTests

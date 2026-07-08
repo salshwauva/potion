@@ -1,0 +1,18 @@
+# Generated Xcode project (source of truth is project.yml)
+*.xcodeproj
+
+# Xcode / SwiftPM build output
+.build/
+DerivedData/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+*.xcuserstate
+
+# SwiftPM
+.swiftpm/
+
+# macOS
+.DS_Store
+
+# Node tooling for the spec build step (added in P3)
+node_modules/
