@@ -1,14 +1,15 @@
 import SwiftUI
 
-/// The right-hand companion panel. It holds the History and Docs sections, with
-/// the Error explainer arriving in a later phase. It shows Docs automatically
-/// while a documented command is being typed, and returns to History otherwise.
+/// The right-hand companion panel. It holds the History, Docs, and Error
+/// sections. It shows Docs automatically while a documented command is typed,
+/// and jumps to Errors when a command fails.
 struct CompanionPanel: View {
     @ObservedObject var controller: TerminalController
 
     enum Section: Hashable {
         case history
         case docs
+        case errors
     }
 
     @State private var section: Section = .history
@@ -18,6 +19,7 @@ struct CompanionPanel: View {
             Picker("", selection: $section) {
                 Text("History").tag(Section.history)
                 Text("Docs").tag(Section.docs)
+                Text("Errors").tag(Section.errors)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -29,11 +31,16 @@ struct CompanionPanel: View {
                 HistoryPanel(controller: controller)
             case .docs:
                 DocsPanel(controller: controller)
+            case .errors:
+                ErrorsPanel(controller: controller)
             }
         }
         .frame(minWidth: 320)
         .onChange(of: controller.docsCommand) { _, newValue in
-            section = (newValue != nil) ? .docs : .history
+            if newValue != nil { section = .docs }
+        }
+        .onChange(of: controller.focusedErrorId) { _, newValue in
+            if newValue != nil { section = .errors }
         }
     }
 }

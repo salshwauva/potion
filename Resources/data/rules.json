@@ -1,0 +1,96 @@
+{
+  "rules": [
+    {
+      "id": "permission-denied",
+      "outputRegex": "[Pp]ermission denied",
+      "title": "Permission denied",
+      "explanation": "The system blocked this because your account does not have permission to touch that file or folder. Running as an administrator can help, but only do so when you trust the command.",
+      "fixes": [
+        { "description": "Run the same command as an administrator", "command": "sudo {command}" }
+      ]
+    },
+    {
+      "id": "no-such-file",
+      "outputRegex": "No such file or directory",
+      "title": "No such file or directory",
+      "explanation": "A file or folder named in the command does not exist at that path. Commands look in the current folder unless you give a full path, so check the spelling and where you are.",
+      "fixes": [
+        { "description": "List what is in the current folder", "command": "ls" }
+      ]
+    },
+    {
+      "id": "git-not-a-repo",
+      "commandPrefix": ["git"],
+      "outputRegex": "not a git repository",
+      "title": "This folder is not a git repository",
+      "explanation": "git only works inside a repository, and this folder has not been set up as one yet.",
+      "fixes": [
+        { "description": "Start a new repository here", "command": "git init" }
+      ]
+    },
+    {
+      "id": "git-nothing-to-commit",
+      "commandPrefix": ["git"],
+      "outputRegex": "nothing to commit",
+      "title": "Nothing to commit",
+      "explanation": "There are no staged changes to save. Everything is already committed, or your edits have not been staged yet.",
+      "fixes": [
+        { "description": "See the current state of your files", "command": "git status" }
+      ]
+    },
+    {
+      "id": "git-detached-head",
+      "commandPrefix": ["git"],
+      "outputRegex": "detached HEAD",
+      "title": "You are on a detached HEAD",
+      "explanation": "You are looking at one specific commit rather than a branch. New commits made here are easy to lose. Making a branch keeps your work safe.",
+      "fixes": [
+        { "description": "Create a branch from where you are", "command": "git switch -c new-branch" }
+      ]
+    },
+    {
+      "id": "git-push-rejected",
+      "commandPrefix": ["git"],
+      "outputRegex": "\\[rejected\\]|non-fast-forward|Updates were rejected",
+      "title": "The push was rejected",
+      "explanation": "The remote has commits you do not have yet, so git will not overwrite them. Bring those changes in first, then push again.",
+      "fixes": [
+        { "description": "Pull the remote changes and replay yours on top", "command": "git pull --rebase" },
+        { "description": "Then push again", "command": "git push" }
+      ]
+    },
+    {
+      "id": "git-no-upstream",
+      "commandPrefix": ["git"],
+      "outputRegex": "no upstream branch|has no upstream|--set-upstream",
+      "title": "This branch has no remote yet",
+      "explanation": "git does not know which remote branch to push to. Set it once and git will remember for next time.",
+      "fixes": [
+        { "description": "Push and remember the remote branch", "command": "git push -u origin HEAD" }
+      ]
+    },
+    {
+      "id": "operation-not-permitted",
+      "outputRegex": "Operation not permitted",
+      "title": "Operation not permitted",
+      "explanation": "macOS privacy protection blocked this. Some folders such as Desktop, Documents, and Downloads need Full Disk Access granted to your terminal in System Settings, under Privacy and Security.",
+      "fixes": []
+    },
+    {
+      "id": "port-in-use",
+      "outputRegex": "(?:EADDRINUSE|[Aa]ddress already in use).*?:(\\d+)",
+      "title": "That port is already in use",
+      "explanation": "Another program is already listening on that port, so this one cannot start. Find what is using it, then stop it or choose a different port.",
+      "fixes": [
+        { "description": "See what is using the port", "command": "lsof -i :{1}" }
+      ]
+    },
+    {
+      "id": "unmatched-quote",
+      "outputRegex": "unexpected end of file|unmatched|parse error near|dquote>",
+      "title": "A quote was left open",
+      "explanation": "The command has a quote that was never closed, so the shell is still waiting for the rest of it. Check that every \" and ' has a matching partner.",
+      "fixes": []
+    }
+  ]
+}

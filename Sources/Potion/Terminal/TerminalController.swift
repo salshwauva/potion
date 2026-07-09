@@ -44,7 +44,14 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     /// of the draft. Nil when the draft has no documented command.
     @Published private(set) var docsCommand: String?
 
+    /// Explanations for commands that failed, newest first.
+    @Published private(set) var errorCards: [IdentifiedErrorCard] = []
+    /// The error card the user asked to see, used to scroll and switch tabs.
+    @Published var focusedErrorId: UUID?
+
     let tldrLibrary = TldrLibrary()
+    private let errorEngine: ErrorRuleEngine?
+    private lazy var knownCommands: [String] = Self.scanPath()
 
     private let scanner = ShellIntegrationScanner()
     private let timeline = CommandTimeline()
@@ -63,6 +70,7 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         let engine = Self.loadSpecEngine()
         specEngine = engine
         subtitleRenderer = engine.map { SubtitleRenderer(engine: $0, syntax: Self.loadSyntaxTable()) }
+        errorEngine = Self.loadErrorEngine()
         super.init()
     }
 
@@ -75,6 +83,34 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
             return nil
         }
         return SpecEngine(specs: specs)
+    }
+
+    private static func loadErrorEngine() -> ErrorRuleEngine? {
+        guard let rulesURL = Bundle.main.url(forResource: "rules", withExtension: "json", subdirectory: "data")
+            ?? Bundle.main.url(forResource: "rules", withExtension: "json"),
+              let data = try? Data(contentsOf: rulesURL),
+              let set = try? JSONDecoder().decode(ErrorRuleSet.self, from: data) else {
+            return nil
+        }
+        var brew: [String] = []
+        if let brewURL = Bundle.main.url(forResource: "brew-formulae", withExtension: "txt", subdirectory: "data")
+            ?? Bundle.main.url(forResource: "brew-formulae", withExtension: "txt"),
+           let text = try? String(contentsOf: brewURL, encoding: .utf8) {
+            brew = text.split(whereSeparator: \.isNewline).map(String.init)
+        }
+        return ErrorRuleEngine(rules: set.rules, brewFormulae: brew)
+    }
+
+    /// Executable names found on PATH, used for typo suggestions.
+    private static func scanPath() -> [String] {
+        let path = ProcessInfo.processInfo.environment["PATH"] ?? "/usr/bin:/bin:/usr/sbin:/sbin"
+        let fm = FileManager.default
+        var names = Set<String>()
+        for directory in path.split(separator: ":").map(String.init) {
+            guard let entries = try? fm.contentsOfDirectory(atPath: directory) else { continue }
+            names.formUnion(entries)
+        }
+        return Array(names)
     }
 
     private static func loadSyntaxTable() -> SyntaxTable {
@@ -144,8 +180,13 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         for event in events {
             timeline.apply(event)
             switch event {
-            case .execStart: isRunningCommand = true
-            case .commandFinished: isRunningCommand = false
+            case .execStart:
+                isRunningCommand = true
+            case .commandFinished(let exitCode, let output):
+                isRunningCommand = false
+                if let exitCode, exitCode != 0, let record = timeline.records.last {
+                    explainFailure(record: record, exitCode: exitCode, output: output)
+                }
             case .enterAlternateScreen: isAlternateScreen = true
             case .exitAlternateScreen: isAlternateScreen = false
             default: break
@@ -153,6 +194,22 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         }
         records = timeline.records
         updateFocus()
+    }
+
+    private func explainFailure(record: CommandRecord, exitCode: Int32, output: String) {
+        guard let engine = errorEngine, !record.command.isEmpty else { return }
+        guard let card = engine.explain(command: record.command, exitCode: exitCode, output: output, knownCommands: knownCommands) else { return }
+        errorCards.insert(IdentifiedErrorCard(id: record.id, command: record.command, card: card), at: 0)
+        focusedErrorId = record.id
+    }
+
+    /// Brings the error card for a record into view.
+    func focusError(_ id: UUID) {
+        focusedErrorId = id
+    }
+
+    func hasErrorCard(for id: UUID) -> Bool {
+        errorCards.contains { $0.id == id }
     }
 
     // MARK: Input bar

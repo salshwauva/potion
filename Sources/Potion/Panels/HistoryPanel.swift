@@ -51,9 +51,13 @@ struct HistoryPanel: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 8) {
                 ForEach(controller.records.reversed()) { record in
-                    HistoryCard(record: record, subtitle: controller.subtitle(for: record.command)) {
-                        controller.insertIntoInput(record.command)
-                    }
+                    HistoryCard(
+                        record: record,
+                        subtitle: controller.subtitle(for: record.command),
+                        canExplain: controller.hasErrorCard(for: record.id),
+                        onReRun: { controller.insertIntoInput(record.command) },
+                        onExplain: { controller.focusError(record.id) }
+                    )
                 }
             }
             .padding(10)
@@ -73,7 +77,9 @@ struct HistoryPanel: View {
 private struct HistoryCard: View {
     let record: CommandRecord
     let subtitle: Subtitle
+    let canExplain: Bool
     let onReRun: () -> Void
+    let onExplain: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -135,6 +141,9 @@ private struct HistoryCard: View {
                 Button("Copy output") { copy(record.capturedOutput) }
             }
             Button("Re-run", action: onReRun)
+            if canExplain {
+                Button("Explain", action: onExplain)
+            }
         }
         .font(.caption)
         .buttonStyle(.link)
