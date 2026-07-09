@@ -14,5 +14,8 @@ xcuserdata/
 # macOS
 .DS_Store
 
+# Shell history written into the shim during local testing
+Resources/zsh/.zsh_history
+
 # Node tooling for the spec build step (added in P3)
 node_modules/

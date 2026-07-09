@@ -1,17 +1,23 @@
 import SwiftUI
 
-/// P2 shell: the terminal with a docked input bar on the left, the History Panel
-/// on the right. The subtitle bar, docs, and error sections arrive in later
-/// phases and slot into these same regions.
+/// P3 shell: the terminal with a docked input bar and a floating autocomplete
+/// popup on the left, the History Panel on the right. The subtitle bar, docs,
+/// and error sections arrive in later phases.
 struct ContentView: View {
     @StateObject private var controller = TerminalController()
 
     var body: some View {
         HSplitView {
-            VStack(spacing: 0) {
-                TerminalPane(controller: controller)
-                    .frame(minWidth: 420, minHeight: 240)
-                InputBarView(controller: controller)
+            ZStack(alignment: .bottomLeading) {
+                VStack(spacing: 0) {
+                    TerminalPane(controller: controller)
+                        .frame(minWidth: 420, minHeight: 240)
+                    InputBarView(controller: controller)
+                }
+                AutocompletePopup(controller: controller)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 58)
+                    .allowsHitTesting(controller.isCompletionVisible)
             }
             HistoryPanel(controller: controller)
         }

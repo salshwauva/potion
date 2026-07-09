@@ -29,11 +29,39 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     /// Manual override that forces keystrokes to the terminal (toggled by ⌘⇧T).
     @Published private(set) var manualPassthrough = false
 
+    // Autocomplete state, published for the popup.
+    @Published private(set) var completions: [Completion] = []
+    @Published private(set) var selectedCompletion: Int = 0
+    @Published private(set) var isCompletionVisible: Bool = false
+    /// The remainder of the top suggestion beyond what is typed, for ghost text.
+    @Published private(set) var ghostText: String = ""
+
     private let scanner = ShellIntegrationScanner()
     private let timeline = CommandTimeline()
     private var history = InputHistory()
 
+    private let specEngine: SpecEngine?
+    private let fileLister = FileManagerLister()
+    private var completionDebounce: DispatchWorkItem?
+    private var lastCompletion: CompletionResult?
+
     weak var inputField: NSTextField?
+
+    override init() {
+        specEngine = Self.loadSpecEngine()
+        super.init()
+    }
+
+    private static func loadSpecEngine() -> SpecEngine? {
+        guard let url = Bundle.main.url(forResource: "specs", withExtension: "json", subdirectory: "data")
+            ?? Bundle.main.url(forResource: "specs", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let specs = try? SpecStore.decode(data) else {
+            // Graceful degradation: the terminal works without autocomplete.
+            return nil
+        }
+        return SpecEngine(specs: specs)
+    }
 
     private(set) lazy var terminalView: PotionTerminalView = {
         let view = PotionTerminalView(frame: .zero)
@@ -95,6 +123,7 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         draft = ""
         inputField?.stringValue = ""
         history.reset()
+        clearCompletions()
     }
 
     /// Sends raw text straight to the terminal, bypassing the input bar. Used as
@@ -108,6 +137,7 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         manualPassthrough = false
         draft = text
         inputField?.stringValue = text
+        clearCompletions()
         moveFocusToInput()
     }
 
@@ -127,6 +157,100 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
             inputField?.stringValue = recalled
             moveInsertionToEnd()
         }
+    }
+
+    // MARK: Autocomplete
+
+    /// Recomputes suggestions for the current draft. Debounced and computed off
+    /// the main thread so typing never blocks.
+    func requestCompletions(text: String, cursor: Int) {
+        completionDebounce?.cancel()
+
+        guard let engine = specEngine, inputSink == .inputBar, !text.isEmpty else {
+            clearCompletions()
+            return
+        }
+
+        let cwd = currentDirectory ?? FileManager.default.currentDirectoryPath
+        let lister = fileLister
+        let work = DispatchWorkItem { [weak self] in
+            let result = engine.complete(line: text, cursor: cursor, cwd: cwd, files: lister)
+            DispatchQueue.main.async {
+                guard let self, self.draft == text else { return }
+                self.apply(result, forText: text, cursor: cursor)
+            }
+        }
+        completionDebounce = work
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.03, execute: work)
+    }
+
+    private func apply(_ result: CompletionResult, forText text: String, cursor: Int) {
+        lastCompletion = result
+        completions = result.completions
+        selectedCompletion = 0
+        isCompletionVisible = !result.completions.isEmpty
+        ghostText = computeGhost(result, text: text, cursor: cursor)
+    }
+
+    private func computeGhost(_ result: CompletionResult, text: String, cursor: Int) -> String {
+        guard let top = result.completions.first, cursor == text.count else { return "" }
+        let typedPrefix = String(Array(text)[result.replaceStart..<cursor])
+        guard top.insertion.count > typedPrefix.count,
+              top.insertion.hasPrefix(typedPrefix) else { return "" }
+        return String(top.insertion.dropFirst(typedPrefix.count))
+    }
+
+    func clearCompletions() {
+        completionDebounce?.cancel()
+        completions = []
+        isCompletionVisible = false
+        ghostText = ""
+        lastCompletion = nil
+    }
+
+    func moveCompletionUp() {
+        guard isCompletionVisible, !completions.isEmpty else { return }
+        selectedCompletion = (selectedCompletion - 1 + completions.count) % completions.count
+    }
+
+    func moveCompletionDown() {
+        guard isCompletionVisible, !completions.isEmpty else { return }
+        selectedCompletion = (selectedCompletion + 1) % completions.count
+    }
+
+    /// Applies the highlighted suggestion to the draft. Returns false when there
+    /// is nothing to accept, so the caller can fall back to default behavior.
+    @discardableResult
+    func acceptCompletion() -> Bool {
+        guard isCompletionVisible,
+              let result = lastCompletion,
+              completions.indices.contains(selectedCompletion) else {
+            return false
+        }
+        let chosen = completions[selectedCompletion]
+        var chars = Array(draft)
+        let clampedEnd = min(result.replaceEnd, chars.count)
+        chars.replaceSubrange(result.replaceStart..<clampedEnd, with: Array(chosen.insertion))
+        let newText = String(chars)
+        draft = newText
+        inputField?.stringValue = newText
+        let newCursor = result.replaceStart + chosen.insertion.count
+        setInsertion(to: newCursor)
+        clearCompletions()
+        // A completed directory or subcommand can lead to further suggestions.
+        requestCompletions(text: newText, cursor: newCursor)
+        return true
+    }
+
+    func chooseCompletion(at index: Int) {
+        guard completions.indices.contains(index) else { return }
+        selectedCompletion = index
+        acceptCompletion()
+    }
+
+    private func setInsertion(to location: Int) {
+        guard let editor = inputField?.currentEditor() else { return }
+        editor.selectedRange = NSRange(location: location, length: 0)
     }
 
     // MARK: Focus passthrough

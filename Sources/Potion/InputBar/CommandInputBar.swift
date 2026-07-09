@@ -50,19 +50,39 @@ struct CommandInputBar: NSViewRepresentable {
                 return
             }
             controller.draft = field.stringValue
+            let cursor = field.currentEditor()?.selectedRange.location ?? field.stringValue.count
+            controller.requestCompletions(text: field.stringValue, cursor: cursor)
         }
 
         func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
             switch selector {
+            case #selector(NSResponder.insertTab(_:)):
+                // Tab accepts the highlighted suggestion; otherwise falls through.
+                return controller.acceptCompletion()
             case #selector(NSResponder.insertNewline(_:)):
+                // Enter always runs the typed line, never accepts a suggestion.
                 controller.submitCurrentInput()
                 return true
             case #selector(NSResponder.moveUp(_:)):
-                controller.historyPrevious()
+                if controller.isCompletionVisible {
+                    controller.moveCompletionUp()
+                } else {
+                    controller.historyPrevious()
+                }
                 return true
             case #selector(NSResponder.moveDown(_:)):
-                controller.historyNext()
+                if controller.isCompletionVisible {
+                    controller.moveCompletionDown()
+                } else {
+                    controller.historyNext()
+                }
                 return true
+            case #selector(NSResponder.cancelOperation(_:)):
+                if controller.isCompletionVisible {
+                    controller.clearCompletions()
+                    return true
+                }
+                return false
             default:
                 return false
             }

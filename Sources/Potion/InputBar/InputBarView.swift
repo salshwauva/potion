@@ -27,9 +27,10 @@ struct InputBarView: View {
             Circle()
                 .fill(passthrough ? Color.orange : Color.green)
                 .frame(width: 7, height: 7)
-            Text(passthrough ? passthroughReason : "Ready for a command")
+            Text(passthrough ? passthroughReason : statusText)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
             Spacer()
             Button(action: controller.toggleManualPassthrough) {
                 Text(passthrough ? "Return to input" : "Send keys to terminal")
@@ -40,6 +41,13 @@ struct InputBarView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 5)
+    }
+
+    private var statusText: String {
+        if controller.isCompletionVisible, !controller.ghostText.isEmpty {
+            return "Tab to complete"
+        }
+        return "Ready for a command"
     }
 
     private var passthroughReason: String {

@@ -1,0 +1,254 @@
+[
+  {
+    "names": ["git"],
+    "description": "The version control system",
+    "subcommands": [
+      { "names": ["clone"], "description": "Copy a remote repository to your machine",
+        "args": [{ "name": "repository", "description": "The repository URL" }] },
+      { "names": ["init"], "description": "Create an empty repository in this folder" },
+      { "names": ["status"], "description": "Show which files changed since the last commit" },
+      { "names": ["add"], "description": "Stage changes to include in the next commit",
+        "args": [{ "name": "pathspec", "template": "filepaths", "isVariadic": true }],
+        "options": [{ "names": ["-A", "--all"], "description": "Stage every change" },
+                    { "names": ["-p", "--patch"], "description": "Choose changes to stage piece by piece" }] },
+      { "names": ["commit"], "description": "Save the staged changes as a new commit",
+        "options": [{ "names": ["-m", "--message"], "description": "Set the commit message", "argument": { "name": "message" } },
+                    { "names": ["-a", "--all"], "description": "Stage every tracked file first" },
+                    { "names": ["--amend"], "description": "Replace the previous commit" }] },
+      { "names": ["checkout"], "description": "Switch branches or restore files",
+        "args": [{ "name": "branch", "description": "The branch or path to switch to" }],
+        "options": [{ "names": ["-b"], "description": "Create a new branch and switch to it", "argument": { "name": "new-branch" } }] },
+      { "names": ["switch"], "description": "Change to another branch",
+        "args": [{ "name": "branch" }],
+        "options": [{ "names": ["-c", "--create"], "description": "Create the branch then switch to it", "argument": { "name": "new-branch" } }] },
+      { "names": ["branch"], "description": "List, create, or delete branches",
+        "options": [{ "names": ["-d", "--delete"], "description": "Delete a branch", "argument": { "name": "branch" } },
+                    { "names": ["-a", "--all"], "description": "Show remote branches too" }] },
+      { "names": ["merge"], "description": "Join another branch into the current one",
+        "args": [{ "name": "branch" }] },
+      { "names": ["rebase"], "description": "Reapply commits on top of another branch",
+        "args": [{ "name": "branch" }] },
+      { "names": ["pull"], "description": "Fetch from a remote and merge into the current branch" },
+      { "names": ["push"], "description": "Send local commits to a remote",
+        "options": [{ "names": ["-u", "--set-upstream"], "description": "Remember the remote branch for next time" },
+                    { "names": ["-f", "--force"], "description": "Overwrite the remote branch, use with care" }] },
+      { "names": ["fetch"], "description": "Download remote changes without merging" },
+      { "names": ["log"], "description": "Show the commit history",
+        "options": [{ "names": ["--oneline"], "description": "One line per commit" },
+                    { "names": ["--graph"], "description": "Draw a text graph of branches" }] },
+      { "names": ["diff"], "description": "Show line-by-line changes" },
+      { "names": ["reset"], "description": "Undo staging or move the branch pointer" },
+      { "names": ["restore"], "description": "Discard changes in files",
+        "args": [{ "name": "pathspec", "template": "filepaths", "isVariadic": true }] },
+      { "names": ["stash"], "description": "Set aside uncommitted changes for later" },
+      { "names": ["remote"], "description": "Manage the set of tracked repositories" },
+      { "names": ["cherry-pick"], "description": "Apply the change from a specific commit" },
+      { "names": ["tag"], "description": "Mark a commit with a name" }
+    ]
+  },
+  {
+    "names": ["ls"],
+    "description": "List the contents of a folder",
+    "options": [
+      { "names": ["-l"], "description": "Long format, one file per line with details" },
+      { "names": ["-a", "--all"], "description": "Include hidden files" },
+      { "names": ["-h", "--human-readable"], "description": "Show sizes like 4K or 2M" },
+      { "names": ["-R", "--recursive"], "description": "List every subfolder too" },
+      { "names": ["-t"], "description": "Sort by time, newest first" },
+      { "names": ["-S"], "description": "Sort by size, largest first" }
+    ],
+    "args": [{ "name": "path", "template": "filepaths", "isOptional": true, "isVariadic": true }]
+  },
+  {
+    "names": ["cd"],
+    "description": "Change the current folder",
+    "args": [{ "name": "directory", "template": "folders", "isOptional": true }]
+  },
+  {
+    "names": ["cat"],
+    "description": "Print the contents of a file",
+    "options": [{ "names": ["-n", "--number"], "description": "Number every line" }],
+    "args": [{ "name": "file", "template": "filepaths", "isVariadic": true }]
+  },
+  {
+    "names": ["echo"],
+    "description": "Print text back to the screen",
+    "options": [{ "names": ["-n"], "description": "Do not add a newline at the end" }],
+    "args": [{ "name": "text", "isVariadic": true }]
+  },
+  {
+    "names": ["grep"],
+    "description": "Search for text inside files",
+    "options": [
+      { "names": ["-r", "-R", "--recursive"], "description": "Search inside folders and their subfolders" },
+      { "names": ["-i", "--ignore-case"], "description": "Ignore capitalization" },
+      { "names": ["-n", "--line-number"], "description": "Show the line number of each match" },
+      { "names": ["-v", "--invert-match"], "description": "Show lines that do not match" },
+      { "names": ["-l", "--files-with-matches"], "description": "List only the file names that contain a match" },
+      { "names": ["-c", "--count"], "description": "Count how many lines match" },
+      { "names": ["-E", "--extended-regexp"], "description": "Treat the pattern as an extended regular expression" },
+      { "names": ["-w", "--word-regexp"], "description": "Match whole words only" }
+    ],
+    "args": [
+      { "name": "pattern", "description": "The text or pattern to look for" },
+      { "name": "file", "template": "filepaths", "isOptional": true, "isVariadic": true }
+    ]
+  },
+  {
+    "names": ["tar"],
+    "description": "Bundle files into an archive or unpack one",
+    "options": [
+      { "names": ["-c", "--create"], "description": "Create a new archive" },
+      { "names": ["-x", "--extract"], "description": "Unpack an existing archive" },
+      { "names": ["-t", "--list"], "description": "List what is inside an archive" },
+      { "names": ["-f", "--file"], "description": "Use this archive file", "argument": { "name": "archive", "template": "filepaths" } },
+      { "names": ["-z", "--gzip"], "description": "Compress or read with gzip" },
+      { "names": ["-v", "--verbose"], "description": "Show each file as it is processed" }
+    ],
+    "args": [{ "name": "file", "template": "filepaths", "isOptional": true, "isVariadic": true }]
+  },
+  {
+    "names": ["mkdir"],
+    "description": "Create a new folder",
+    "options": [{ "names": ["-p", "--parents"], "description": "Create any missing parent folders too" }],
+    "args": [{ "name": "directory", "isVariadic": true }]
+  },
+  {
+    "names": ["rm"],
+    "description": "Delete files or folders",
+    "options": [
+      { "names": ["-r", "-R", "--recursive"], "description": "Delete a folder and everything in it" },
+      { "names": ["-f", "--force"], "description": "Do not ask for confirmation" },
+      { "names": ["-i"], "description": "Ask before each deletion" }
+    ],
+    "args": [{ "name": "file", "template": "filepaths", "isVariadic": true }]
+  },
+  {
+    "names": ["cp"],
+    "description": "Copy files or folders",
+    "options": [{ "names": ["-r", "-R", "--recursive"], "description": "Copy a folder and its contents" }],
+    "args": [
+      { "name": "source", "template": "filepaths" },
+      { "name": "destination", "template": "filepaths" }
+    ]
+  },
+  {
+    "names": ["mv"],
+    "description": "Move or rename files or folders",
+    "args": [
+      { "name": "source", "template": "filepaths" },
+      { "name": "destination", "template": "filepaths" }
+    ]
+  },
+  {
+    "names": ["wc"],
+    "description": "Count lines, words, and characters",
+    "options": [
+      { "names": ["-l", "--lines"], "description": "Count lines only" },
+      { "names": ["-w", "--words"], "description": "Count words only" },
+      { "names": ["-c", "--bytes"], "description": "Count bytes only" }
+    ],
+    "args": [{ "name": "file", "template": "filepaths", "isOptional": true, "isVariadic": true }]
+  },
+  {
+    "names": ["find"],
+    "description": "Search for files by name or other criteria",
+    "options": [
+      { "names": ["-name"], "description": "Match files by name", "argument": { "name": "pattern" } },
+      { "names": ["-type"], "description": "Match by kind, f for file or d for folder", "argument": { "name": "type" } }
+    ],
+    "args": [{ "name": "path", "template": "folders" }]
+  },
+  {
+    "names": ["curl"],
+    "description": "Transfer data to or from a URL",
+    "options": [
+      { "names": ["-O", "--remote-name"], "description": "Save the download using its remote file name" },
+      { "names": ["-o", "--output"], "description": "Save to this file name", "argument": { "name": "file", "template": "filepaths" } },
+      { "names": ["-L", "--location"], "description": "Follow redirects" },
+      { "names": ["-s", "--silent"], "description": "Do not show progress" }
+    ],
+    "args": [{ "name": "url", "description": "The address to request" }]
+  },
+  {
+    "names": ["npm"],
+    "description": "The Node package manager",
+    "subcommands": [
+      { "names": ["install", "i"], "description": "Install dependencies",
+        "args": [{ "name": "package", "isOptional": true, "isVariadic": true }] },
+      { "names": ["run"], "description": "Run a script defined in package.json",
+        "args": [{ "name": "script" }] },
+      { "names": ["start"], "description": "Run the start script" },
+      { "names": ["test"], "description": "Run the test script" },
+      { "names": ["init"], "description": "Create a package.json" },
+      { "names": ["uninstall"], "description": "Remove a package" }
+    ]
+  },
+  {
+    "names": ["brew"],
+    "description": "The Homebrew package manager for macOS",
+    "subcommands": [
+      { "names": ["install"], "description": "Install a formula or app",
+        "args": [{ "name": "formula" }] },
+      { "names": ["uninstall"], "description": "Remove a formula" },
+      { "names": ["update"], "description": "Update Homebrew itself" },
+      { "names": ["upgrade"], "description": "Upgrade installed formulae" },
+      { "names": ["list"], "description": "List what is installed" },
+      { "names": ["search"], "description": "Search for a formula" }
+    ]
+  },
+  {
+    "names": ["chmod"],
+    "description": "Change who can read, write, or run a file",
+    "options": [{ "names": ["-R", "--recursive"], "description": "Apply to a folder and its contents" }],
+    "args": [
+      { "name": "mode", "description": "The permission setting, for example 755" },
+      { "name": "file", "template": "filepaths", "isVariadic": true }
+    ]
+  },
+  {
+    "names": ["touch"],
+    "description": "Create an empty file or update its timestamp",
+    "args": [{ "name": "file", "template": "filepaths", "isVariadic": true }]
+  },
+  {
+    "names": ["head"],
+    "description": "Show the first lines of a file",
+    "options": [{ "names": ["-n"], "description": "How many lines to show", "argument": { "name": "count" } }],
+    "args": [{ "name": "file", "template": "filepaths", "isOptional": true, "isVariadic": true }]
+  },
+  {
+    "names": ["tail"],
+    "description": "Show the last lines of a file",
+    "options": [
+      { "names": ["-n"], "description": "How many lines to show", "argument": { "name": "count" } },
+      { "names": ["-f", "--follow"], "description": "Keep watching for new lines" }
+    ],
+    "args": [{ "name": "file", "template": "filepaths", "isOptional": true, "isVariadic": true }]
+  },
+  {
+    "names": ["man"],
+    "description": "Open the manual page for a command",
+    "args": [{ "name": "command" }]
+  },
+  {
+    "names": ["which"],
+    "description": "Show the full path of a command",
+    "args": [{ "name": "command" }]
+  },
+  {
+    "names": ["ps"],
+    "description": "List running processes",
+    "options": [
+      { "names": ["-a"], "description": "Include processes from other users" },
+      { "names": ["-x"], "description": "Include processes without a terminal" },
+      { "names": ["-e"], "description": "Show every process" }
+    ]
+  },
+  {
+    "names": ["kill"],
+    "description": "Send a signal to a process, usually to stop it",
+    "options": [{ "names": ["-9"], "description": "Force the process to stop immediately" }],
+    "args": [{ "name": "pid", "description": "The process id" }]
+  }
+]

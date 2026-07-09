@@ -39,6 +39,8 @@ targets:
       - Sources/Potion
       - path: Resources/zsh
         type: folder
+      - path: Resources/data
+        type: folder
     dependencies:
       - target: PotionCore
       - package: SwiftTerm

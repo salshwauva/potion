@@ -25,6 +25,27 @@ Builds run with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` set
 for the invocation, which avoids a global sudo change. The README documents the
 one time `xcode-select -s` command for normal Xcode use.
 
+## ADR-0005: Native SpecEngine over bundled JSON, not Fig specs in JavaScriptCore
+
+The spec calls for Fig's TypeScript autocomplete specs compiled to JS and run in
+JavaScriptCore. That path requires reproducing the Fig runtime (loadSpec,
+generators, thousands of interdependent TS modules) inside JSCore, a large and
+fragile subsystem. The implemented approach is a native tokenizer and spec-tree
+walker (`SpecEngine`) over a Codable `CommandSpec` model, populated from bundled
+JSON (`Resources/data/specs.json`).
+
+Consequences:
+  - The engine is pure Swift and unit tested, which the ground rules require, and
+    it is the single parser feeding both autocomplete and the subtitle renderer.
+  - No JavaScriptCore dependency and a tiny bundle.
+  - The spec set is hand-authored and smaller than the full Fig catalog. The
+    `CommandSpec` shape mirrors Fig's, so a build-time importer that converts Fig
+    specs to this JSON can widen coverage later without touching the engine.
+  - Dynamic generators remain deferred, as the spec intended. The
+    `SpecEngine.complete` argument path is where a generator hook attaches.
+
+This is a deviation from the written spec and is flagged for review.
+
 ## ADR-0004: Ad hoc code signing for local development
 
 The app target signs ad hoc (`CODE_SIGN_IDENTITY = "-"`, manual style, no
