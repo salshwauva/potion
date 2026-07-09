@@ -46,6 +46,24 @@ Consequences:
 
 This is a deviation from the written spec and is flagged for review.
 
+## ADR-0006: Theme applied via tokens; contrast verified; pixel window frame deferred
+
+Colors and fonts are tokens on `ThemeManager` / `PotionPalette`, injected as an
+environment object so views never hardcode a palette value. Status, accent, and
+surface colors all resolve through the palette. The terminal body keeps a
+separate, conventional scheme (light text on dark plum) set on the SwiftTerm view.
+
+Contrast was measured, not assumed. Terminal text reads at 13.8:1 on the plum
+background; subtitles read at 14.5:1 (known) and 8.0:1 (honestly-unknown). Both
+clear WCAG AA for normal text. The tertiary tone (separators and the empty-state
+hint) sits at 4.3:1, which clears AA for large text only, and is used only for
+non-essential decoration.
+
+Deferred: the fully custom pixel-art NSWindow titlebar and chunky frame from the
+mockups. The witchy identity is carried by the plum surfaces, pink rim accents,
+pixel display fonts, and the reactive mascot. A custom window frame is a larger
+AppKit undertaking and is not required for the theme to read as Potion.
+
 ## ADR-0004: Ad hoc code signing for local development
 
 The app target signs ad hoc (`CODE_SIGN_IDENTITY = "-"`, manual style, no

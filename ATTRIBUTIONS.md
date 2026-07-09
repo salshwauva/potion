@@ -37,13 +37,16 @@ importer can widen coverage later.
 - Source: https://github.com/withfig/autocomplete
 - License: MIT
 
+## Also in use
+
 ### Fonts
 
-Candidate typefaces for the theme system. Added in P7. Only openly licensed
-faces are bundled.
+Bundled typefaces for the theme system. All are openly licensed. The pixel faces
+are used only for chrome, headings, and badges, never for terminal text or
+subtitles.
 
-- Press Start 2P: SIL Open Font License 1.1
-- VT323: SIL Open Font License 1.1
-- JetBrains Mono: SIL Open Font License 1.1
+- Press Start 2P: SIL Open Font License 1.1 (bundled)
+- VT323: SIL Open Font License 1.1 (bundled)
+- JetBrains Mono: SIL Open Font License 1.1 (bundled)
 - SF Mono: system font, not bundled
 - Berkeley Mono: commercial license, excluded unless separately licensed

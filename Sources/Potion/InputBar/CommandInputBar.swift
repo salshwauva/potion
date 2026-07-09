@@ -19,6 +19,8 @@ struct CommandInputBar: NSViewRepresentable {
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
+        // Readable on the plum chrome. Mirrors the theme text tokens.
+        field.textColor = NSColor(red: 0.95, green: 0.92, blue: 1.0, alpha: 1)
         field.lineBreakMode = .byClipping
         field.cell?.isScrollable = true
         field.cell?.wraps = false
@@ -54,6 +56,7 @@ struct CommandInputBar: NSViewRepresentable {
             controller.requestCompletions(text: field.stringValue, cursor: cursor)
             controller.requestSubtitle(text: field.stringValue)
             controller.updateDocs(text: field.stringValue)
+            controller.refreshMascot()
         }
 
         func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {

@@ -43,6 +43,8 @@ targets:
         type: folder
       - path: Resources/tldr
         type: folder
+      - path: Resources/fonts
+        type: folder
     dependencies:
       - target: PotionCore
       - package: SwiftTerm
@@ -50,6 +52,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pixybyteco.potion
         GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
         ENABLE_APP_SANDBOX: NO

@@ -140,14 +140,29 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         docsCommand = first.value
     }
 
+    /// The mascot mirrors the command lifecycle. Success and failure are held
+    /// briefly, then settle back to idle or typing.
+    @Published private(set) var mascotState: MascotState = .idle
+    private var mascotSettleWork: DispatchWorkItem?
+
     private(set) lazy var terminalView: PotionTerminalView = {
         let view = PotionTerminalView(frame: .zero)
         view.processDelegate = self
         view.onRawData = { [weak self] slice in
             self?.ingest(slice)
         }
+        Self.applyTerminalPalette(to: view)
         return view
     }()
+
+    /// The terminal's own text uses a conventional, high-legibility scheme on a
+    /// dark plum background. The witchy colors stay in the chrome, never here.
+    private static func applyTerminalPalette(to view: PotionTerminalView) {
+        view.nativeBackgroundColor = NSColor(red: 0.12, green: 0.08, blue: 0.16, alpha: 1)
+        view.nativeForegroundColor = NSColor(red: 0.91, green: 0.88, blue: 0.96, alpha: 1)
+        view.caretColor = NSColor(red: 1.0, green: 0.31, blue: 0.64, alpha: 1)
+        view.selectedTextBackgroundColor = NSColor(red: 1.0, green: 0.44, blue: 0.71, alpha: 0.35)
+    }
 
     /// Keystrokes go to the terminal while a full-screen program owns the screen,
     /// while a command is running (so prompts like sudo and read work), or when
@@ -182,8 +197,12 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
             switch event {
             case .execStart:
                 isRunningCommand = true
+                mascotSettleWork?.cancel()
+                mascotState = .running
             case .commandFinished(let exitCode, let output):
                 isRunningCommand = false
+                mascotState = (exitCode == 0) ? .success : .failure
+                scheduleMascotSettle()
                 if let exitCode, exitCode != 0, let record = timeline.records.last {
                     explainFailure(record: record, exitCode: exitCode, output: output)
                 }
@@ -194,6 +213,7 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         }
         records = timeline.records
         updateFocus()
+        refreshMascot()
     }
 
     private func explainFailure(record: CommandRecord, exitCode: Int32, output: String) {
@@ -206,6 +226,29 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     /// Brings the error card for a record into view.
     func focusError(_ id: UUID) {
         focusedErrorId = id
+    }
+
+    // MARK: Mascot
+
+    /// Refreshes the mascot for the current typing and running state, unless an
+    /// outcome beat is being held.
+    func refreshMascot() {
+        guard mascotState != .success, mascotState != .failure else { return }
+        mascotState = MascotState.classify(
+            isRunning: isRunningCommand,
+            isAlternateScreen: isAlternateScreen,
+            draftEmpty: draft.isEmpty
+        )
+    }
+
+    private func scheduleMascotSettle() {
+        mascotSettleWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, self.mascotState == .success || self.mascotState == .failure else { return }
+            self.mascotState = self.draft.isEmpty ? .idle : .typing
+        }
+        mascotSettleWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5, execute: work)
     }
 
     func hasErrorCard(for id: UUID) -> Bool {

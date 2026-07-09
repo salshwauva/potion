@@ -7,6 +7,7 @@ import SwiftUI
 /// actions to copy or re-run. Subtitles are added in a later phase.
 struct HistoryPanel: View {
     @ObservedObject var controller: TerminalController
+    @EnvironmentObject private var theme: ThemeManager
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -21,12 +22,13 @@ struct HistoryPanel: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 3) {
             Text("History")
-                .font(.headline)
+                .font(theme.chromeFont(size: 12))
+                .foregroundStyle(theme.palette.textPrimary)
             Text(controller.currentDirectory.map(shortenPath) ?? "working directory unknown")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.palette.textSecondary)
                 .lineLimit(1)
                 .truncationMode(.head)
         }
@@ -81,12 +83,15 @@ private struct HistoryCard: View {
     let onReRun: () -> Void
     let onExplain: () -> Void
 
+    @EnvironmentObject private var theme: ThemeManager
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 statusBadge
                 Text(record.command.isEmpty ? "(no command text)" : record.command)
                     .font(.system(.body, design: .monospaced))
+                    .foregroundStyle(theme.palette.textPrimary)
                     .lineLimit(2)
                     .textSelection(.enabled)
             }
@@ -98,7 +103,7 @@ private struct HistoryCard: View {
         }
         .padding(9)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 7).fill(Color.primary.opacity(0.05)))
+        .background(RoundedRectangle(cornerRadius: 7).fill(theme.palette.cardBackground))
     }
 
     private var statusBadge: some View {
@@ -109,9 +114,9 @@ private struct HistoryCard: View {
 
     private var statusColor: Color {
         switch record.status {
-        case .running: return .yellow
-        case .success: return .green
-        case .failure: return .red
+        case .running: return theme.palette.running
+        case .success: return theme.palette.success
+        case .failure: return theme.palette.failure
         }
     }
 
@@ -124,14 +129,14 @@ private struct HistoryCard: View {
                 Text("succeeded")
             case .failure:
                 Text(record.exitCode.map { "failed, exit \($0)" } ?? "failed")
-                    .foregroundStyle(.red)
+                    .foregroundStyle(theme.palette.failure)
             }
             if let duration = record.duration {
                 Text(formatDuration(duration))
             }
         }
         .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(theme.palette.textSecondary)
     }
 
     private var actions: some View {

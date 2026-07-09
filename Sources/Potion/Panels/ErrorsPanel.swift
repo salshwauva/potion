@@ -66,27 +66,31 @@ private struct ErrorCardView: View {
     let onInsert: (ErrorFix) -> Void
     let subtitle: (String) -> Subtitle
 
+    @EnvironmentObject private var theme: ThemeManager
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(theme.palette.running)
                 Text(item.card.title)
                     .font(.headline)
+                    .foregroundStyle(theme.palette.textPrimary)
             }
             Text(item.command)
                 .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.palette.textSecondary)
                 .textSelection(.enabled)
             Text(item.card.explanation)
                 .font(.callout)
+                .foregroundStyle(theme.palette.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if !item.card.fixes.isEmpty {
                 Divider()
                 Text(item.card.fixes.count == 1 ? "Try this" : "Try one of these")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.palette.textSecondary)
                 ForEach(Array(item.card.fixes.enumerated()), id: \.offset) { _, fix in
                     fixView(fix)
                 }
@@ -94,8 +98,8 @@ private struct ErrorCardView: View {
         }
         .padding(11)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.08)))
-        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.orange.opacity(0.25)))
+        .background(RoundedRectangle(cornerRadius: 8).fill(theme.palette.failure.opacity(0.10)))
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(theme.palette.rim.opacity(0.4)))
     }
 
     private func fixView(_ fix: ErrorFix) -> some View {
@@ -105,10 +109,11 @@ private struct ErrorCardView: View {
             HStack(alignment: .top, spacing: 8) {
                 Text(fix.command)
                     .font(.system(.callout, design: .monospaced))
+                    .foregroundStyle(theme.palette.textPrimary)
                     .textSelection(.enabled)
                     .padding(7)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
+                    .background(RoundedRectangle(cornerRadius: 6).fill(theme.palette.cardBackground))
                 Button("Insert") { onInsert(fix) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)

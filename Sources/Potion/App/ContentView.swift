@@ -1,10 +1,12 @@
 import SwiftUI
 
-/// P3 shell: the terminal with a docked input bar and a floating autocomplete
-/// popup on the left, the History Panel on the right. The subtitle bar, docs,
-/// and error sections arrive in later phases.
+/// The full app: terminal with a docked subtitle bar and input bar, a floating
+/// autocomplete popup, and the companion panel with the mascot, History, Docs,
+/// and Errors. The Potion theme lives in the chrome around the terminal; the
+/// terminal's own text stays conventional and readable.
 struct ContentView: View {
     @StateObject private var controller = TerminalController()
+    @EnvironmentObject private var theme: ThemeManager
 
     var body: some View {
         HSplitView {
@@ -16,11 +18,12 @@ struct ContentView: View {
                 }
                 AutocompletePopup(controller: controller)
                     .padding(.horizontal, 12)
-                    .padding(.bottom, 58)
+                    .padding(.bottom, 92)
                     .allowsHitTesting(controller.isCompletionVisible)
             }
             CompanionPanel(controller: controller)
         }
+        .background(theme.palette.panelBackground)
         .onAppear {
             DispatchQueue.main.async { controller.updateFocus() }
         }

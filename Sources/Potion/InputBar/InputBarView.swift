@@ -4,6 +4,7 @@ import SwiftUI
 /// input field. In later phases the live subtitle bar sits between them.
 struct InputBarView: View {
     @ObservedObject var controller: TerminalController
+    @EnvironmentObject private var theme: ThemeManager
 
     private var passthrough: Bool {
         controller.inputSink == .terminal
@@ -22,16 +23,17 @@ struct InputBarView: View {
                 .padding(.vertical, 8)
                 .opacity(passthrough ? 0.4 : 1)
         }
+        .background(theme.palette.windowChrome)
     }
 
     private var focusStrip: some View {
         HStack(spacing: 8) {
             Circle()
-                .fill(passthrough ? Color.orange : Color.green)
+                .fill(passthrough ? theme.palette.running : theme.palette.success)
                 .frame(width: 7, height: 7)
             Text(passthrough ? passthroughReason : statusText)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.palette.textSecondary)
                 .lineLimit(1)
             Spacer()
             Button(action: controller.toggleManualPassthrough) {

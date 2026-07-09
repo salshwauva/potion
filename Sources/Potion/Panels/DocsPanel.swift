@@ -7,6 +7,7 @@ import SwiftUI
 /// and each example carries its own subtitle.
 struct DocsPanel: View {
     @ObservedObject var controller: TerminalController
+    @EnvironmentObject private var theme: ThemeManager
 
     @State private var searchText = ""
     @State private var selectedCommand: String?
@@ -81,9 +82,10 @@ struct DocsPanel: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(page.name)
                         .font(.system(.title2, design: .monospaced))
+                        .foregroundStyle(theme.palette.textPrimary)
                     Text(page.description)
                         .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.palette.textSecondary)
                 }
                 ForEach(Array(page.examples.enumerated()), id: \.offset) { _, example in
                     exampleView(example)
@@ -104,7 +106,7 @@ struct DocsPanel: View {
                     .textSelection(.enabled)
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
+                    .background(RoundedRectangle(cornerRadius: 6).fill(theme.palette.cardBackground))
                 Button("Insert") { controller.insertIntoInput(example.command) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)

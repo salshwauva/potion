@@ -8,6 +8,8 @@ struct SubtitleText: View {
     let subtitle: Subtitle
     var font: Font = .callout
 
+    @EnvironmentObject private var theme: ThemeManager
+
     var body: some View {
         Text(attributed)
             .font(font)
@@ -21,9 +23,9 @@ struct SubtitleText: View {
             var run = AttributedString(phrase.text)
             switch phrase.confidence {
             case .known:
-                run.foregroundColor = .primary
+                run.foregroundColor = theme.palette.textPrimary
             case .unknown:
-                run.foregroundColor = .secondary
+                run.foregroundColor = theme.palette.textSecondary
                 run.font = font.italic()
             }
             result.append(run)
@@ -33,7 +35,7 @@ struct SubtitleText: View {
 
     private var separator: AttributedString {
         var run = AttributedString(" · ")
-        run.foregroundColor = Color(nsColor: .tertiaryLabelColor)
+        run.foregroundColor = theme.palette.textTertiary
         return run
     }
 }
@@ -42,13 +44,14 @@ struct SubtitleText: View {
 /// frozen translation of the command just run.
 struct SubtitleBar: View {
     @ObservedObject var controller: TerminalController
+    @EnvironmentObject private var theme: ThemeManager
 
     var body: some View {
         Group {
             if controller.liveSubtitle.isEmpty {
                 Text("The plain-English meaning of your command appears here.")
                     .font(.callout)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(theme.palette.textTertiary)
             } else {
                 SubtitleText(subtitle: controller.liveSubtitle)
             }
@@ -57,5 +60,6 @@ struct SubtitleBar: View {
         .fixedSize(horizontal: false, vertical: true)
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
+        .background(theme.palette.windowChrome)
     }
 }

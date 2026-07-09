@@ -6,6 +6,7 @@ import SwiftUI
 /// directly. Enter never touches this list: it always runs the typed line.
 struct AutocompletePopup: View {
     @ObservedObject var controller: TerminalController
+    @EnvironmentObject private var theme: ThemeManager
 
     private let maxRows = 8
 
@@ -29,9 +30,9 @@ struct AutocompletePopup: View {
                 }
             }
             .frame(maxWidth: 460, alignment: .leading)
-            .background(.regularMaterial)
+            .background(theme.palette.cardBackgroundRaised)
             .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.12)))
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(theme.palette.rim.opacity(0.35)))
             .shadow(radius: 12, y: 4)
         }
     }
@@ -40,12 +41,12 @@ struct AutocompletePopup: View {
         HStack(spacing: 10) {
             Text(completion.display)
                 .font(.system(.body, design: .monospaced))
-                .foregroundStyle(selected ? Color.accentColor : .primary)
+                .foregroundStyle(selected ? theme.palette.accent : theme.palette.textPrimary)
                 .layoutPriority(1)
             if let description = completion.description {
                 Text(description)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.palette.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
@@ -53,6 +54,6 @@ struct AutocompletePopup: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
-        .background(selected ? Color.accentColor.opacity(0.15) : Color.clear)
+        .background(selected ? theme.palette.accent.opacity(0.18) : Color.clear)
     }
 }

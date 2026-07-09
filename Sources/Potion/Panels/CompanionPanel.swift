@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// The right-hand companion panel. It holds the History, Docs, and Error
-/// sections. It shows Docs automatically while a documented command is typed,
-/// and jumps to Errors when a command fails.
+/// The right-hand companion panel: the mascot nook on top, then the History,
+/// Docs, and Error sections. It shows Docs automatically while a documented
+/// command is typed, and jumps to Errors when a command fails.
 struct CompanionPanel: View {
     @ObservedObject var controller: TerminalController
+    @EnvironmentObject private var theme: ThemeManager
 
     enum Section: Hashable {
         case history
@@ -16,6 +17,11 @@ struct CompanionPanel: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            MascotNook(state: controller.mascotState)
+                .padding(.horizontal, 12)
+                .padding(.top, 12)
+                .padding(.bottom, 6)
+
             Picker("", selection: $section) {
                 Text("History").tag(Section.history)
                 Text("Docs").tag(Section.docs)
@@ -23,7 +29,8 @@ struct CompanionPanel: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .padding(8)
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
             Divider()
 
             switch section {
@@ -36,6 +43,7 @@ struct CompanionPanel: View {
             }
         }
         .frame(minWidth: 320)
+        .background(theme.palette.panelBackground)
         .onChange(of: controller.docsCommand) { _, newValue in
             if newValue != nil { section = .docs }
         }
