@@ -1,10 +1,16 @@
 import SwiftUI
 
-/// P0 shell: the raw terminal fills the window. Companion panel, subtitle bar,
-/// and input bar arrive in later phases.
+/// P1 shell: the terminal on the left, a live command-tracking panel on the
+/// right. The companion panel is a debug surface for now and is replaced by the
+/// History, Docs, and Error sections in later phases.
 struct ContentView: View {
+    @StateObject private var controller = TerminalController()
+
     var body: some View {
-        TerminalPane()
-            .ignoresSafeArea()
+        HSplitView {
+            TerminalPane(controller: controller)
+                .frame(minWidth: 420)
+            DebugCommandList(controller: controller)
+        }
     }
 }

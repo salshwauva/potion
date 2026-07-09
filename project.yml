@@ -37,6 +37,8 @@ targets:
     platform: macOS
     sources:
       - Sources/Potion
+      - path: Resources/zsh
+        type: folder
     dependencies:
       - target: PotionCore
       - package: SwiftTerm
