@@ -15,22 +15,27 @@ Terminal emulator and PTY handling.
 
 ## Planned (added in later phases)
 
-### Fig autocomplete specs
-
-Command, subcommand, flag, and argument descriptions that feed both autocomplete
-and subtitles. Added in P3.
-
-- Source: https://github.com/withfig/autocomplete
-- License: MIT
-
 ### tldr pages
 
-Command documentation shown in the docs panel. Added in P5.
+Command documentation shown in the docs panel. The bundled English `common` and
+`osx` pages are the tldr-pages project's own content, included offline.
 
 - Source: https://github.com/tldr-pages/tldr
 - License: CC-BY 4.0
-- Attribution requirement: the tldr pages content is distributed under
-  Creative Commons Attribution. Credit is retained in this file and in the app.
+- Attribution: tldr pages content is distributed under Creative Commons
+  Attribution. The tldr-pages project and its contributors are credited here and
+  in the app's About and Docs sections.
+
+## Planned (added in later phases)
+
+### Fig autocomplete specs
+
+The command specification format mirrors Fig's autocomplete specs. The bundled
+specs are authored natively (see docs/decisions.md, ADR-0005); a Fig-to-JSON
+importer can widen coverage later.
+
+- Source: https://github.com/withfig/autocomplete
+- License: MIT
 
 ### Fonts
 

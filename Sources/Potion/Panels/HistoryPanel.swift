@@ -18,7 +18,6 @@ struct HistoryPanel: View {
                 list
             }
         }
-        .frame(minWidth: 300)
     }
 
     private var header: some View {

@@ -19,7 +19,7 @@ struct ContentView: View {
                     .padding(.bottom, 58)
                     .allowsHitTesting(controller.isCompletionVisible)
             }
-            HistoryPanel(controller: controller)
+            CompanionPanel(controller: controller)
         }
         .onAppear {
             DispatchQueue.main.async { controller.updateFocus() }

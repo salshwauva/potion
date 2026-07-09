@@ -41,6 +41,8 @@ targets:
         type: folder
       - path: Resources/data
         type: folder
+      - path: Resources/tldr
+        type: folder
     dependencies:
       - target: PotionCore
       - package: SwiftTerm

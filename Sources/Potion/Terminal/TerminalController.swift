@@ -40,6 +40,12 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     /// the command that was just run.
     @Published private(set) var liveSubtitle: Subtitle = Subtitle(phrases: [])
 
+    /// The command whose documentation should be shown, driven by the first word
+    /// of the draft. Nil when the draft has no documented command.
+    @Published private(set) var docsCommand: String?
+
+    let tldrLibrary = TldrLibrary()
+
     private let scanner = ShellIntegrationScanner()
     private let timeline = CommandTimeline()
     private var history = InputHistory()
@@ -85,6 +91,17 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     /// History Panel. Returns an empty subtitle when the engine is unavailable.
     func subtitle(for command: String) -> Subtitle {
         subtitleRenderer?.render(command) ?? Subtitle(phrases: [])
+    }
+
+    /// Updates which command's documentation to surface, based on the first word
+    /// of the current draft.
+    func updateDocs(text: String) {
+        let tokens = Tokenizer.tokenize(text)
+        guard let first = tokens.first(where: { $0.kind == .word }), tldrLibrary.hasPage(named: first.value) else {
+            docsCommand = nil
+            return
+        }
+        docsCommand = first.value
     }
 
     private(set) lazy var terminalView: PotionTerminalView = {
