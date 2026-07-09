@@ -1,16 +1,22 @@
 import SwiftUI
 
-/// P1 shell: the terminal on the left, a live command-tracking panel on the
-/// right. The companion panel is a debug surface for now and is replaced by the
-/// History, Docs, and Error sections in later phases.
+/// P2 shell: the terminal with a docked input bar on the left, the History Panel
+/// on the right. The subtitle bar, docs, and error sections arrive in later
+/// phases and slot into these same regions.
 struct ContentView: View {
     @StateObject private var controller = TerminalController()
 
     var body: some View {
         HSplitView {
-            TerminalPane(controller: controller)
-                .frame(minWidth: 420)
-            DebugCommandList(controller: controller)
+            VStack(spacing: 0) {
+                TerminalPane(controller: controller)
+                    .frame(minWidth: 420, minHeight: 240)
+                InputBarView(controller: controller)
+            }
+            HistoryPanel(controller: controller)
+        }
+        .onAppear {
+            DispatchQueue.main.async { controller.updateFocus() }
         }
     }
 }
