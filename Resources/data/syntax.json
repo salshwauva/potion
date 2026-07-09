@@ -1,0 +1,25 @@
+{
+  "operators": {
+    "|": "then feed that into the next command",
+    "|&": "then feed that output and its errors into the next command",
+    "||": "otherwise, if that failed, run",
+    "&&": "then, only if that succeeded, run",
+    ";": "then, regardless, run",
+    "&": "in the background"
+  },
+  "redirects": {
+    ">": "write the output to {file}, replacing it",
+    ">>": "add the output to the end of {file}",
+    "<": "read input from {file}",
+    "2>": "write error messages to {file}",
+    "2>>": "add error messages to the end of {file}"
+  },
+  "specials": {
+    "home": "your home folder",
+    "sudo": "as an administrator (be careful)",
+    "variable": "the value of {name}",
+    "glob": "a pattern that matches files",
+    "unknown_flag": "not sure what this flag does",
+    "run_program": "run the program {name}"
+  }
+}

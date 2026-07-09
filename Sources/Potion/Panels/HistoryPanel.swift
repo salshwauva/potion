@@ -52,7 +52,7 @@ struct HistoryPanel: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 8) {
                 ForEach(controller.records.reversed()) { record in
-                    HistoryCard(record: record) {
+                    HistoryCard(record: record, subtitle: controller.subtitle(for: record.command)) {
                         controller.insertIntoInput(record.command)
                     }
                 }
@@ -73,6 +73,7 @@ struct HistoryPanel: View {
 
 private struct HistoryCard: View {
     let record: CommandRecord
+    let subtitle: Subtitle
     let onReRun: () -> Void
 
     var body: some View {
@@ -83,6 +84,9 @@ private struct HistoryCard: View {
                     .font(.system(.body, design: .monospaced))
                     .lineLimit(2)
                     .textSelection(.enabled)
+            }
+            if !subtitle.isEmpty {
+                SubtitleText(subtitle: subtitle, font: .caption)
             }
             metadata
             actions

@@ -12,6 +12,8 @@ struct InputBarView: View {
     var body: some View {
         VStack(spacing: 0) {
             Divider()
+            SubtitleBar(controller: controller)
+            Divider()
             focusStrip
             Divider()
             CommandInputBar(controller: controller)

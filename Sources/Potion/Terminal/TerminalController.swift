@@ -36,19 +36,27 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     /// The remainder of the top suggestion beyond what is typed, for ghost text.
     @Published private(set) var ghostText: String = ""
 
+    /// The live translation of the current draft, or the frozen translation of
+    /// the command that was just run.
+    @Published private(set) var liveSubtitle: Subtitle = Subtitle(phrases: [])
+
     private let scanner = ShellIntegrationScanner()
     private let timeline = CommandTimeline()
     private var history = InputHistory()
 
     private let specEngine: SpecEngine?
+    private let subtitleRenderer: SubtitleRenderer?
     private let fileLister = FileManagerLister()
     private var completionDebounce: DispatchWorkItem?
+    private var subtitleDebounce: DispatchWorkItem?
     private var lastCompletion: CompletionResult?
 
     weak var inputField: NSTextField?
 
     override init() {
-        specEngine = Self.loadSpecEngine()
+        let engine = Self.loadSpecEngine()
+        specEngine = engine
+        subtitleRenderer = engine.map { SubtitleRenderer(engine: $0, syntax: Self.loadSyntaxTable()) }
         super.init()
     }
 
@@ -61,6 +69,22 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
             return nil
         }
         return SpecEngine(specs: specs)
+    }
+
+    private static func loadSyntaxTable() -> SyntaxTable {
+        guard let url = Bundle.main.url(forResource: "syntax", withExtension: "json", subdirectory: "data")
+            ?? Bundle.main.url(forResource: "syntax", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let table = try? JSONDecoder().decode(SyntaxTable.self, from: data) else {
+            return .builtin
+        }
+        return table
+    }
+
+    /// Renders a subtitle synchronously. Cheap enough for per-row use in the
+    /// History Panel. Returns an empty subtitle when the engine is unavailable.
+    func subtitle(for command: String) -> Subtitle {
+        subtitleRenderer?.render(command) ?? Subtitle(phrases: [])
     }
 
     private(set) lazy var terminalView: PotionTerminalView = {
@@ -124,6 +148,10 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         inputField?.stringValue = ""
         history.reset()
         clearCompletions()
+        // Freeze the translation of the command that was just run until the next
+        // keystroke replaces it.
+        subtitleDebounce?.cancel()
+        liveSubtitle = subtitle(for: line)
     }
 
     /// Sends raw text straight to the terminal, bypassing the input bar. Used as
@@ -251,6 +279,29 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     private func setInsertion(to location: Int) {
         guard let editor = inputField?.currentEditor() else { return }
         editor.selectedRange = NSRange(location: location, length: 0)
+    }
+
+    // MARK: Live subtitle
+
+    /// Recomputes the live subtitle for the draft. Debounced and off the main
+    /// thread so the translation never blocks typing.
+    func requestSubtitle(text: String) {
+        subtitleDebounce?.cancel()
+
+        guard let renderer = subtitleRenderer, !text.trimmingCharacters(in: .whitespaces).isEmpty else {
+            liveSubtitle = Subtitle(phrases: [])
+            return
+        }
+
+        let work = DispatchWorkItem { [weak self] in
+            let subtitle = renderer.render(text)
+            DispatchQueue.main.async {
+                guard let self, self.draft == text else { return }
+                self.liveSubtitle = subtitle
+            }
+        }
+        subtitleDebounce = work
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.08, execute: work)
     }
 
     // MARK: Focus passthrough

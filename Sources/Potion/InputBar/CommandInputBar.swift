@@ -52,6 +52,7 @@ struct CommandInputBar: NSViewRepresentable {
             controller.draft = field.stringValue
             let cursor = field.currentEditor()?.selectedRange.location ?? field.stringValue.count
             controller.requestCompletions(text: field.stringValue, cursor: cursor)
+            controller.requestSubtitle(text: field.stringValue)
         }
 
         func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
