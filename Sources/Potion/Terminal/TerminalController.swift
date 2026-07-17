@@ -155,7 +155,6 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         view.onRawData = { [weak self] slice in
             self?.ingest(slice)
         }
-        Self.applyTerminalPalette(to: view)
         return view
     }()
 
@@ -191,6 +190,11 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
             environment: environment,
             execName: "-\(shellName)"
         )
+
+        // Apply the terminal palette only after the process is running. Setting
+        // the native colors on a freshly constructed, unattached view breaks
+        // SwiftTerm's initial draw, leaving the terminal blank.
+        Self.applyTerminalPalette(to: terminalView)
     }
 
     private func ingest(_ slice: ArraySlice<UInt8>) {
