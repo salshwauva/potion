@@ -146,7 +146,11 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     private var mascotSettleWork: DispatchWorkItem?
 
     private(set) lazy var terminalView: PotionTerminalView = {
-        let view = PotionTerminalView(frame: .zero)
+        // A sane initial size matters: the shell is spawned before SwiftUI has
+        // laid the view out, so a zero frame would create the PTY at 0x0 and the
+        // first prompt would be printed into nothing. A real size gives the PTY
+        // sensible rows and columns; it reflows when SwiftUI resizes the view.
+        let view = PotionTerminalView(frame: CGRect(x: 0, y: 0, width: 800, height: 480))
         view.processDelegate = self
         view.onRawData = { [weak self] slice in
             self?.ingest(slice)

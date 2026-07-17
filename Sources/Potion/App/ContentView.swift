@@ -1,38 +1,44 @@
 import SwiftUI
 
-/// The full app: terminal with a docked subtitle bar and input bar, a floating
-/// autocomplete popup, and the companion panel with the mascot, History, Docs,
-/// and Errors. The wordmark bar and input composer attach as safe-area insets so
-/// a greedy terminal can never squeeze them out. `fixedSize(vertical:)` gives
-/// each inset its true content height (the composer grows with a wrapping
-/// subtitle) instead of collapsing to zero.
+/// The full app: a pixel wordmark bar across the top, then the terminal with its
+/// docked subtitle bar and input bar on the left and the companion panel on the
+/// right. Everything is laid out with plain VStacks and explicit bar heights.
+/// Two constraints drive this: applying `safeAreaInset` anywhere above the
+/// SwiftTerm view breaks its drawing, and the wordmark and input bars collapse
+/// to zero height without an explicit frame. The autocomplete popup floats as an
+/// overlay (never a safe-area inset) so it does not disturb the terminal.
 struct ContentView: View {
     @StateObject private var controller = TerminalController()
     @EnvironmentObject private var theme: ThemeManager
 
     var body: some View {
-        HSplitView {
-            ZStack(alignment: .bottomLeading) {
-                TerminalPane(controller: controller)
-                    .frame(minWidth: 420, minHeight: 200)
-                    .safeAreaInset(edge: .bottom, spacing: 0) {
-                        InputBarView(controller: controller)
-                            .frame(height: 150)
-                    }
-                AutocompletePopup(controller: controller)
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 96)
-                    .allowsHitTesting(controller.isCompletionVisible)
-            }
-            CompanionPanel(controller: controller)
-        }
-        .safeAreaInset(edge: .top, spacing: 0) {
+        VStack(spacing: 0) {
             WindowChromeBar(controller: controller)
                 .frame(height: 38)
+            HSplitView {
+                terminalColumn
+                    .frame(minWidth: 420, minHeight: 260)
+                CompanionPanel(controller: controller)
+            }
         }
         .background(theme.palette.panelBackground)
         .onAppear {
             DispatchQueue.main.async { controller.updateFocus() }
+        }
+    }
+
+    private var terminalColumn: some View {
+        VStack(spacing: 0) {
+            TerminalPane(controller: controller)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            InputBarView(controller: controller)
+                .frame(height: 150)
+        }
+        .overlay(alignment: .bottomLeading) {
+            AutocompletePopup(controller: controller)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 158)
+                .allowsHitTesting(controller.isCompletionVisible)
         }
     }
 }
