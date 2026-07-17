@@ -10,7 +10,7 @@ struct PotionApp: App {
                 .environmentObject(theme)
                 .frame(minWidth: 840, minHeight: 520)
         }
-        .windowStyle(.automatic)
+        .windowStyle(.hiddenTitleBar)
         .commands {
             CommandGroup(replacing: .newItem) {}
             CommandMenu("Appearance") {

@@ -12,7 +12,6 @@ struct InputBarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Divider()
             SubtitleBar(controller: controller)
             Divider()
             focusStrip
@@ -31,6 +30,7 @@ struct InputBarView: View {
             Circle()
                 .fill(passthrough ? theme.palette.running : theme.palette.success)
                 .frame(width: 7, height: 7)
+                .shadow(color: (passthrough ? theme.palette.running : theme.palette.success).opacity(0.8), radius: 3)
             Text(passthrough ? passthroughReason : statusText)
                 .font(.caption)
                 .foregroundStyle(theme.palette.textSecondary)
@@ -42,6 +42,15 @@ struct InputBarView: View {
             }
             .buttonStyle(.link)
             .keyboardShortcut("t", modifiers: [.command, .shift])
+            Text("⌘⇧T")
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(theme.palette.textTertiary)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(theme.palette.divider, lineWidth: 1)
+                )
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 5)

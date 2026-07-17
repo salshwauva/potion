@@ -47,19 +47,30 @@ struct SubtitleBar: View {
     @EnvironmentObject private var theme: ThemeManager
 
     var body: some View {
-        Group {
-            if controller.liveSubtitle.isEmpty {
-                Text("The plain-English meaning of your command appears here.")
-                    .font(.callout)
-                    .foregroundStyle(theme.palette.textTertiary)
-            } else {
-                SubtitleText(subtitle: controller.liveSubtitle)
+        VStack(alignment: .leading, spacing: 6) {
+            Text("subtitle")
+                .font(theme.chromeFont(size: 8))
+                .foregroundStyle(theme.palette.rim)
+            Group {
+                if controller.liveSubtitle.isEmpty {
+                    Text("The plain-English meaning of your command appears here.")
+                        .font(.callout)
+                        .foregroundStyle(theme.palette.textTertiary)
+                } else {
+                    SubtitleText(subtitle: controller.liveSubtitle)
+                        .lineLimit(2)
+                        .truncationMode(.tail)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.top, 10)
+        .padding(.bottom, 11)
         .background(theme.palette.windowChrome)
+        .overlay(alignment: .top) {
+            Rectangle().fill(theme.palette.rim.opacity(0.42)).frame(height: 1)
+        }
     }
 }
