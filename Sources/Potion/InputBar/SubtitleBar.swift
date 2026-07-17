@@ -51,16 +51,10 @@ struct SubtitleBar: View {
             Text("subtitle")
                 .font(theme.chromeFont(size: 8))
                 .foregroundStyle(theme.palette.rim)
-            Group {
-                if controller.liveSubtitle.isEmpty {
-                    Text("The plain-English meaning of your command appears here.")
-                        .font(.callout)
-                        .foregroundStyle(theme.palette.textTertiary)
-                } else {
-                    SubtitleText(subtitle: controller.liveSubtitle)
-                        .lineLimit(2)
-                        .truncationMode(.tail)
-                }
+            if !controller.liveSubtitle.isEmpty {
+                SubtitleText(subtitle: controller.liveSubtitle)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
