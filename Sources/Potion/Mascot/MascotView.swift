@@ -3,16 +3,19 @@ import SwiftUI
 
 /// A pixel black cat that reacts to the command lifecycle. It never overlaps
 /// live text; it lives in its own nook. It never mocks the reader: a failed
-/// command reads as a shared problem to look at, not judgment. Animation is
-/// cheap and is dropped entirely when Reduce Motion is on.
+/// command reads as a shared problem to look at, not judgment.
+///
+/// The cat itself never moves. State changes swap frames instantly, and the only
+/// motion is a slow opacity pulse on the eyes while a command runs, which is
+/// dropped entirely under Reduce Motion.
 struct MascotView: View {
     let state: MascotState
 
     @EnvironmentObject private var theme: ThemeManager
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var animate = false
+    @State private var pulse = false
 
-    private var body_: Color { Color(red: 0.09, green: 0.06, blue: 0.13) }
+    private var furColor: Color { Color(red: 0.09, green: 0.06, blue: 0.13) }
 
     var body: some View {
         ZStack {
@@ -22,29 +25,43 @@ struct MascotView: View {
             extras
         }
         .frame(width: 56, height: 56)
-        .onAppear { animate = true }
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: animate)
+        .onAppear { pulse = true }
+        // Frames swap instantly. Without this the whole cat animates between
+        // states and appears to bounce in and out of its nook.
+        .animation(nil, value: state)
     }
+
+    // MARK: Ears
+
+    /// Ears flatten sideways when a command fails: the classic "airplane ears" a
+    /// cat makes when something is off. Upright the rest of the time.
+    private var isAirplaneEars: Bool { state == .failure }
 
     private var ears: some View {
         HStack(spacing: 18) {
-            Triangle().fill(body_).overlay(Triangle().stroke(theme.palette.rim, lineWidth: 1.5))
-                .frame(width: 16, height: 14)
-            Triangle().fill(body_).overlay(Triangle().stroke(theme.palette.rim, lineWidth: 1.5))
-                .frame(width: 16, height: 14)
+            ear.rotationEffect(.degrees(isAirplaneEars ? -72 : 0), anchor: .bottom)
+            ear.rotationEffect(.degrees(isAirplaneEars ? 72 : 0), anchor: .bottom)
         }
-        .offset(y: -18)
+        .offset(y: isAirplaneEars ? -11 : -18)
+    }
+
+    private var ear: some View {
+        Triangle()
+            .fill(furColor)
+            .overlay(Triangle().stroke(theme.palette.rim, lineWidth: 1.5))
+            .frame(width: 16, height: 14)
     }
 
     private var head: some View {
         RoundedRectangle(cornerRadius: 8)
-            .fill(body_)
+            .fill(furColor)
             .overlay(RoundedRectangle(cornerRadius: 8).stroke(theme.palette.rim, lineWidth: 1.5))
             .frame(width: 44, height: 38)
             .offset(y: 4)
     }
 
-    @ViewBuilder
+    // MARK: Eyes
+
     private var eyes: some View {
         HStack(spacing: 12) {
             eye
@@ -58,10 +75,17 @@ struct MascotView: View {
         switch state {
         case .idle:
             Capsule().fill(theme.palette.accentSoft).frame(width: 8, height: 2)
-        case .typing, .running:
-            Circle().fill(theme.palette.accentSoft)
+        case .typing:
+            Circle().fill(theme.palette.accentSoft).frame(width: 7, height: 7)
+        case .running:
+            Circle()
+                .fill(theme.palette.accentSoft)
                 .frame(width: 7, height: 7)
-                .opacity(state == .running && !reduceMotion ? (animate ? 0.5 : 1) : 1)
+                .opacity(reduceMotion ? 1 : (pulse ? 0.45 : 1))
+                .animation(
+                    reduceMotion ? nil : .easeInOut(duration: 0.9).repeatForever(autoreverses: true),
+                    value: pulse
+                )
         case .success:
             Chevron().stroke(theme.palette.success, lineWidth: 2).frame(width: 9, height: 5)
         case .failure:
@@ -78,7 +102,7 @@ struct MascotView: View {
                 .foregroundStyle(theme.palette.accent)
                 .offset(x: 22, y: -18)
         case .failure:
-            // A small, gentle concerned mouth. Never a frown aimed at the reader.
+            // A small, gentle mouth. Never a frown aimed at the reader.
             Capsule().fill(theme.palette.textSecondary).frame(width: 8, height: 2).offset(y: 15)
         default:
             EmptyView()

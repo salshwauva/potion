@@ -41,11 +41,75 @@ struct DocsPanel: View {
     private var content: some View {
         if !searchText.isEmpty {
             searchResults
-        } else if let command = shownCommand, let page = controller.tldrLibrary.page(named: command) {
-            pageView(page)
+        } else if let command = shownCommand {
+            if let page = controller.tldrLibrary.page(named: command) {
+                pageView(page)
+            } else {
+                missingPage(for: command)
+            }
         } else {
-            emptyState
+            commonCommands
         }
+    }
+
+    /// The default view: a browsable list of the commands Potion knows, each
+    /// with its plain-English description. Selecting one opens its page.
+    private var commonCommands: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                Text("Common commands")
+                    .font(theme.chromeFont(size: 9))
+                    .foregroundStyle(theme.palette.rim)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 10)
+                    .padding(.bottom, 8)
+
+                ForEach(controller.commonCommands, id: \.name) { spec in
+                    Button {
+                        selectedCommand = spec.name
+                    } label: {
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Text(spec.name)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundStyle(theme.palette.textPrimary)
+                                .frame(width: 68, alignment: .leading)
+                            Text(spec.description ?? "")
+                                .font(.caption)
+                                .foregroundStyle(theme.palette.textSecondary)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    Divider().opacity(0.25)
+                }
+            }
+        }
+    }
+
+    /// A command Potion knows but has no bundled page for.
+    private func missingPage(for command: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(command)
+                .font(.system(.title2, design: .monospaced))
+                .foregroundStyle(theme.palette.textPrimary)
+            if let spec = controller.commonCommands.first(where: { $0.names.contains(command) }),
+               let description = spec.description {
+                Text(description)
+                    .font(.callout)
+                    .foregroundStyle(theme.palette.textSecondary)
+            }
+            Text("No bundled documentation page for this one yet.")
+                .font(.caption)
+                .foregroundStyle(theme.palette.textTertiary)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
     }
 
     private var searchResults: some View {
@@ -119,16 +183,4 @@ struct DocsPanel: View {
         .padding(.bottom, 4)
     }
 
-    private var emptyState: some View {
-        VStack {
-            Spacer()
-            Text("Type a command to see friendly examples, or search above.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding()
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
-    }
 }

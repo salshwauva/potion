@@ -50,6 +50,10 @@ public final class SpecEngine {
     private let specsByName: [String: CommandSpec]
     private let commandNames: [String]
 
+    /// Every known command, one entry per command (not per alias), sorted by
+    /// name. Used to offer a browsable list of common commands.
+    public let allSpecs: [CommandSpec]
+
     public init(specs: [CommandSpec]) {
         var map: [String: CommandSpec] = [:]
         for spec in specs {
@@ -59,6 +63,7 @@ public final class SpecEngine {
         }
         self.specsByName = map
         self.commandNames = specs.flatMap(\.names).sorted()
+        self.allSpecs = specs.sorted { $0.name < $1.name }
     }
 
     public func spec(for command: String) -> CommandSpec? {

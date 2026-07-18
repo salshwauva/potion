@@ -123,6 +123,12 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         return table
     }
 
+    /// The bundled commands, for the browsable common-commands list. Empty when
+    /// the spec data failed to load.
+    var commonCommands: [CommandSpec] {
+        specEngine?.allSpecs ?? []
+    }
+
     /// Renders a subtitle synchronously. Cheap enough for per-row use in the
     /// History Panel. Returns an empty subtitle when the engine is unavailable.
     func subtitle(for command: String) -> Subtitle {
