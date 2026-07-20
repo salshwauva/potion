@@ -38,8 +38,12 @@ struct MascotView: View {
             extras
         }
         .frame(width: 68, height: 58)
+        // A gentle bob, synced to the tail so the whole cat breathes together.
+        // Kept to a couple of points: enough to feel alive, never enough to
+        // look like it is leaving the nook.
+        .offset(y: bobOffset)
         // Frames swap instantly. Without this the whole cat animates between
-        // states and appears to bounce in and out of its nook.
+        // states and appears to jump when the state changes.
         .animation(nil, value: state)
         .onAppear { startMotion() }
         .onChange(of: state) { _, _ in startMotion() }
@@ -93,6 +97,26 @@ struct MascotView: View {
     private var swayDelta: Double {
         guard !reduceMotion, motionPeriod != nil else { return 0 }
         return phase ? 15 : -15
+    }
+
+    // MARK: Bob
+
+    /// How far the whole cat rises and falls. Small on purpose: a couple of
+    /// points reads as breathing, more reads as bouncing. A worried cat goes
+    /// still entirely.
+    private var bobAmplitude: CGFloat {
+        switch state {
+        case .idle: return 1.5
+        case .typing: return 1.5
+        case .running: return 2
+        case .success: return 2.5
+        case .failure: return 0
+        }
+    }
+
+    private var bobOffset: CGFloat {
+        guard !reduceMotion, motionPeriod != nil else { return 0 }
+        return phase ? -bobAmplitude : bobAmplitude
     }
 
     // MARK: Ears
