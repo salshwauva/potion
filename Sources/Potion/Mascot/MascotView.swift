@@ -136,13 +136,17 @@ private struct Chevron: Shape {
 struct MascotNook: View {
     let state: MascotState
 
+    @EnvironmentObject private var theme: ThemeManager
+
     var body: some View {
         HStack(spacing: 10) {
             MascotView(state: state)
             Text(caption)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-            Spacer()
+                .font(theme.chromeFont(size: 10))
+                .foregroundStyle(theme.palette.textSecondary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
         }
     }
 
