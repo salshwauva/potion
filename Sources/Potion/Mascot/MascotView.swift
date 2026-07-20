@@ -27,7 +27,7 @@ struct MascotView: View {
     private let blinkTimer = Timer.publish(every: 3.4, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        PixelCat(rows: CatSprite.rows(for: state, blinking: blinking), cell: 4)
+        PixelCat(rows: CatSprite.rows(for: state, blinking: blinking), cell: 3)
             .opacity(pulseOpacity)
             .offset(y: bobOffset)
             .animation(nil, value: state)
