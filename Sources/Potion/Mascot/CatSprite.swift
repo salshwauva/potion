@@ -1,84 +1,196 @@
 import PotionCore
 import SwiftUI
 
-/// The mascot as pixel art on a 20 by 14 grid.
+/// The mascot as pixel art on a 40 by 30 grid. Drawing at this resolution keeps
+/// the cat a comfortable size while each pixel, and so the pink outline, stays
+/// thin.
 ///
 /// Each row is one string, one character per pixel:
 ///   `.` empty · `K` fur · `E` eye · `W` eye highlight · `N` nose
 ///   `M` whisker or mouth · `G` happy eyes
 ///
 /// The rim light is not drawn by hand. Any fur pixel touching empty space is
-/// lit, so the silhouette can be edited without redrawing the outline.
+/// lit, so the silhouette can be edited without redrawing the outline. The
+/// frames are generated from a small drawing script; see the scratch tools.
 enum CatSprite {
-    static let width = 20
-    static let height = 14
+    static let width = 40
+    static let height = 30
 
-    /// The sprite for a state. Blinking closes the eyes of any open-eyed frame.
+    /// The sprite for a state. Blinking closes the eyes of the open-eyed frames.
     static func rows(for state: MascotState, blinking: Bool) -> [String] {
         switch state {
-        case .idle:
-            return face(eyes: closed)
-        case .typing:
-            return face(eyes: blinking ? closed : open)
-        case .running:
-            return face(eyes: blinking ? closed : narrow)
-        case .success:
-            return face(eyes: happy)
-        case .failure:
-            return face(eyes: blinking ? closed : open, earsUp: false, overrides: [
-                4: ".KKKKKKKKKKKKKKKKKK.",  // ears flattened out to the sides
-                11: "....KKKKMMMMKKKK....", // a small, gentle mouth
-            ])
+        case .idle: return idle
+        case .typing: return blinking ? idle : typing
+        case .running: return blinking ? idle : running
+        case .success: return success
+        case .failure: return failure
         }
     }
 
-    // MARK: Frames
+    private static let idle: [String] = [
+        "........................................",
+        "........................................",
+        "...........K................K...........",
+        "...........KK..............KK...........",
+        "..........KKK..............KKK..........",
+        "..........KKKK............KKKK..........",
+        "..........KKKKK...........KKKKK.........",
+        ".........KKKKKK..........KKKKKK.........",
+        ".........KKKKKKK........KKKKKKK.........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        ".........KKKKKKKKKKKKKKKKKKKKKK.........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKEEEEEKKKKKKEEEEEKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "....MMMMKKKKKKKKKKKKKKKKKKKKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "....MMMMKKKKKKKKKKKKKKKKKKKKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        ".........KKKKKKKKKKKKKKKKKKKKKK.........",
+        "..........KKKKKKKKKKKKKKKKKKKK..........",
+        "...........KKKKKKKKKKKKKKKKKK...........",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+    ]
 
-    private static let open = [
-        "...KKWEEKKKKWEEKK...",
-        "...KKEEEKKKKEEEKK...",
-        "...KKEEEKKKKEEEKK...",
-    ]
-    private static let closed = [
-        "...KKKKKKKKKKKKKK...",
-        "...KKKKKKKKKKKKKK...",
-        "...KKEEEKKKKEEEKK...",
-    ]
-    private static let narrow = [
-        "...KKKKKKKKKKKKKK...",
-        "...KKKEEKKKKEEKKK...",
-        "...KKKEEKKKKEEKKK...",
-    ]
-    private static let happy = [
-        "...KKKKKKKKKKKKKK...",
-        "...KKKGKKKKKKGKKK...",
-        "...KKGKGKKKKGKGKK...",
+    private static let typing: [String] = [
+        "........................................",
+        "........................................",
+        "...........K................K...........",
+        "...........KK..............KK...........",
+        "..........KKK..............KKK..........",
+        "..........KKKK............KKKK..........",
+        "..........KKKKK...........KKKKK.........",
+        ".........KKKKKK..........KKKKKK.........",
+        ".........KKKKKKK........KKKKKKK.........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        ".........KKKKKKKKKKKKKKKKKKKKKK.........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKEEEKKKKKKKKEEEKKKKK........",
+        "........KKKKEWEEEKKKKKKEWEEEKKKK........",
+        "........KKKKEEEEEKKKKKKEEEEEKKKK........",
+        "........KKKKEEEEEKKKKKKEEEEEKKKK........",
+        "....MMMMKKKKKEEEKKKKKKKKEEEKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "....MMMMKKKKKKKKKKKKKKKKKKKKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        ".........KKKKKKKKKKKKKKKKKKKKKK.........",
+        "..........KKKKKKKKKKKKKKKKKKKK..........",
+        "...........KKKKKKKKKKKKKKKKKK...........",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
     ]
 
-    /// Assembles a frame: ears, head, the given eyes, whiskers above and below
-    /// the nose.
-    private static func face(eyes: [String], earsUp: Bool = true, overrides: [Int: String] = [:]) -> [String] {
-        var rows = [String](repeating: "....................", count: height)
-        if earsUp {
-            rows[0] = "....K..........K...."
-            rows[1] = "....KK........KK...."
-            rows[2] = "....KKK......KKK...."
-        }
-        rows[3] = "....KKKKKKKKKKKK...."
-        rows[4] = "...KKKKKKKKKKKKKK..."
-        rows[5] = eyes[0]
-        rows[6] = eyes[1]
-        rows[7] = eyes[2]
-        rows[8] = ".MMKKKKKKKKKKKKKKMM."
-        rows[9] = "...KKKKKKNNKKKKKK..."
-        rows[10] = ".MMKKKKKKKKKKKKKKMM."
-        rows[11] = "....KKKKKKKKKKKK...."
-        rows[12] = ".....KKKKKKKKKK....."
-        for (index, row) in overrides {
-            rows[index] = row
-        }
-        return rows
-    }
+    private static let running: [String] = [
+        "........................................",
+        "........................................",
+        "...........K................K...........",
+        "...........KK..............KK...........",
+        "..........KKK..............KKK..........",
+        "..........KKKK............KKKK..........",
+        "..........KKKKK...........KKKKK.........",
+        ".........KKKKKK..........KKKKKK.........",
+        ".........KKKKKKK........KKKKKKK.........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        ".........KKKKKKKKKKKKKKKKKKKKKK.........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKEEEEEKKKKKKEEEEEKKKK........",
+        "........KKKKEEEEEKKKKKKEEEEEKKKK........",
+        "....MMMMKKKKKKKKKKKKKKKKKKKKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "....MMMMKKKKKKKKKKKKKKKKKKKKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        ".........KKKKKKKKKKKKKKKKKKKKKK.........",
+        "..........KKKKKKKKKKKKKKKKKKKK..........",
+        "...........KKKKKKKKKKKKKKKKKK...........",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+    ]
+
+    private static let success: [String] = [
+        "........................................",
+        "........................................",
+        "...........K................K...........",
+        "...........KK..............KK...........",
+        "..........KKK..............KKK..........",
+        "..........KKKK............KKKK..........",
+        "..........KKKKK...........KKKKK.........",
+        ".........KKKKKK..........KKKKKK.........",
+        ".........KKKKKKK........KKKKKKK.........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        ".........KKKKKKKKKKKKKKKKKKKKKK.........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKGKKKGKKKKKKGKKKGKKKK........",
+        "........KKKKKGKGKKKKKKKKGKGKKKKK........",
+        "........KKKKKKGKKKKKKKKKKGKKKKKK........",
+        "....MMMMKKKKKKKKKKKKKKKKKKKKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "....MMMMKKKKKKKKKKKKKKKKKKKKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        ".........KKKKKKKKKKKKKKKKKKKKKK.........",
+        "..........KKKKKKKKKKKKKKKKKKKK..........",
+        "...........KKKKKKKKKKKKKKKKKK...........",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+    ]
+
+    private static let failure: [String] = [
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+        "...........KKKKKKKKKKKKKKKKKK...........",
+        "..........KKKKKKKKKKKKKKKKKKKK..........",
+        ".........KKKKKKKKKKKKKKKKKKKKKK.........",
+        "....KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK....",
+        "....KKKKKKKKKEEEKKKKKKKKEEEKKKKKKKKK....",
+        "....KKKKKKKKEWEEEKKKKKKEWEEEKKKKKKKK....",
+        "....KKKKKKKKEEEEEKKKKKKEEEEEKKKKKKKK....",
+        "........KKKKEEEEEKKKKKKEEEEEKKKK........",
+        "....MMMMKKKKKEEEKKKKKKKKEEEKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "........KKKKKKKKKKKNNKKKKKKKKKKK........",
+        "....MMMMKKKKKKKKKKKKKKKKKKKKKKKKMMMM....",
+        "........KKKKKKKKKKKKKKKKKKKKKKKK........",
+        ".........KKKKKKKKMMMMMMKKKKKKKK.........",
+        "..........KKKKKKKKKKKKKKKKKKKK..........",
+        "...........KKKKKKKKKKKKKKKKKK...........",
+        "........................................",
+        "........................................",
+        "........................................",
+        "........................................",
+    ]
 }
 
 /// Draws a ``CatSprite`` frame, computing the rim light from the silhouette.
@@ -98,8 +210,8 @@ struct PixelCat: View {
                     let rect = CGRect(
                         x: CGFloat(c) * cell,
                         y: CGFloat(r) * cell,
-                        width: cell + 0.5,
-                        height: cell + 0.5
+                        width: cell + 0.3,
+                        height: cell + 0.3
                     )
                     context.fill(Path(rect), with: .color(color(for: character, grid: grid, r: r, c: c)))
                 }

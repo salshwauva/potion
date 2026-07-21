@@ -27,14 +27,14 @@ struct MascotView: View {
     private let blinkTimer = Timer.publish(every: 3.4, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        PixelCat(rows: CatSprite.rows(for: state, blinking: blinking), cell: 3)
+        PixelCat(rows: CatSprite.rows(for: state, blinking: blinking), cell: 1.8)
             .opacity(pulseOpacity)
             .offset(y: bobOffset)
             .animation(nil, value: state)
             .onAppear { startMotion() }
             .onChange(of: state) { _, _ in startMotion() }
             .onReceive(blinkTimer) { _ in
-                guard !reduceMotion, state != .idle, state != .success else { return }
+                guard !reduceMotion, state == .typing || state == .running else { return }
                 blinking = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.13) { blinking = false }
             }
