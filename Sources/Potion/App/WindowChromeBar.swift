@@ -13,11 +13,7 @@ struct WindowChromeBar: View {
         HStack(spacing: 10) {
             wordmark
             Spacer(minLength: 12)
-            Text(cwdText)
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundStyle(theme.palette.textTertiary)
-                .lineLimit(1)
-                .truncationMode(.head)
+            cwdLink
         }
         .padding(.leading, 78)
         .padding(.trailing, 14)
@@ -38,11 +34,27 @@ struct WindowChromeBar: View {
             .kerning(1)
     }
 
-    private var cwdText: String {
-        guard let path = controller.currentDirectory else { return "" }
-        let home = NSHomeDirectory()
-        if path == home { return "~" }
-        if path.hasPrefix(home + "/") { return "~" + path.dropFirst(home.count) }
-        return path
+    @ViewBuilder
+    private var cwdLink: some View {
+        if let cwd = controller.currentDirectory, FolderPath.isFolder(cwd) {
+            Button {
+                FolderPath.open(cwd)
+            } label: {
+                Text(FolderPath.display(from: cwd))
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundStyle(theme.palette.accentSoft)
+                    .lineLimit(1)
+                    .truncationMode(.head)
+            }
+            .buttonStyle(.plain)
+            .help("Open in Finder")
+            .linkCursor()
+        } else {
+            Text(controller.currentDirectory.map(FolderPath.display) ?? "")
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundStyle(theme.palette.textTertiary)
+                .lineLimit(1)
+                .truncationMode(.head)
+        }
     }
 }

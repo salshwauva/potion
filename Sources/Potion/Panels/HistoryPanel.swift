@@ -26,11 +26,24 @@ struct HistoryPanel: View {
             Text("History")
                 .font(theme.chromeFont(size: 12))
                 .foregroundStyle(theme.palette.textPrimary)
-            Text(controller.currentDirectory.map(shortenPath) ?? "working directory unknown")
-                .font(.caption)
-                .foregroundStyle(theme.palette.textSecondary)
-                .lineLimit(1)
-                .truncationMode(.head)
+            if let cwd = controller.currentDirectory, FolderPath.isFolder(cwd) {
+                Button {
+                    FolderPath.open(cwd)
+                } label: {
+                    Text(FolderPath.display(from: cwd))
+                        .font(.caption)
+                        .foregroundStyle(theme.palette.accentSoft)
+                        .lineLimit(1)
+                        .truncationMode(.head)
+                }
+                .buttonStyle(.plain)
+                .help("Open in Finder")
+                .linkCursor()
+            } else {
+                Text("working directory unknown")
+                    .font(.caption)
+                    .foregroundStyle(theme.palette.textSecondary)
+            }
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -66,14 +79,6 @@ struct HistoryPanel: View {
         }
     }
 
-    private func shortenPath(_ path: String) -> String {
-        let home = NSHomeDirectory()
-        if path == home { return "~" }
-        if path.hasPrefix(home + "/") {
-            return "~" + path.dropFirst(home.count)
-        }
-        return path
-    }
 }
 
 private struct HistoryCard: View {
@@ -89,11 +94,14 @@ private struct HistoryCard: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 statusBadge
-                Text(record.command.isEmpty ? "(no command text)" : record.command)
-                    .font(.system(.body, design: .monospaced))
-                    .foregroundStyle(theme.palette.textPrimary)
-                    .lineLimit(2)
-                    .textSelection(.enabled)
+                if record.command.isEmpty {
+                    Text("(no command text)")
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundStyle(theme.palette.textSecondary)
+                } else {
+                    CommandText(command: record.command, cwd: record.cwd)
+                        .lineLimit(2)
+                }
             }
             if !subtitle.isEmpty {
                 SubtitleText(subtitle: subtitle, font: .caption)
