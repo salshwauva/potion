@@ -59,8 +59,9 @@ testable without AppKit or a running app.
 - `Potion`: the SwiftUI app. Terminal wrapper, input bar, companion panels,
   theme, mascot. Depends on `PotionCore`.
 
-The command line is parsed once by a single engine that feeds two consumers:
-autocomplete suggestions and subtitle translations.
+Autocomplete and subtitle translation run on the same tokenizer and the same
+spec engine, so both read a command line through one source of truth rather
+than two divergent parsers.
 
 ## License and attributions
 
