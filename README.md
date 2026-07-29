@@ -11,10 +11,16 @@ it.
 
 ## Status
 
-Phase P0: scaffold and raw terminal. The app spawns a login and interactive
-zsh in a SwiftTerm backed PTY. TUI programs such as vim and htop run untouched.
-Later phases add command tracking, an input bar, autocomplete, subtitles, docs,
-error cards, and the Potion theme.
+Complete. Phases P0 through P7 are implemented, followed by a design pass: raw
+terminal, shell integration and command tracking, input bar and history panel,
+spec engine and autocomplete, subtitle engine and live subtitle bar, docs panel
+with bundled tldr pages, error explainer cards, and the Potion theme with its
+reactive mascot.
+
+The app spawns a login and interactive zsh in a SwiftTerm backed PTY. TUI
+programs such as vim and htop run untouched. Docs work offline from 4,952
+bundled tldr pages. 70 unit tests cover the tokenizer, spec engine, subtitle
+renderer, error rule engine, tldr parser, and terminal parsers.
 
 ## Requirements
 
