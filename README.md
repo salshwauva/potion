@@ -63,6 +63,10 @@ Autocomplete and subtitle translation run on the same tokenizer and the same
 spec engine, so both read a command line through one source of truth rather
 than two divergent parsers.
 
+Design choices where the chosen approach was not the obvious one are recorded
+in [docs/decisions.md](docs/decisions.md), along with the costs accepted and
+the scope deliberately deferred.
+
 ## License and attributions
 
 See [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
