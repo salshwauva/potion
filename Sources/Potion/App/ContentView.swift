@@ -29,7 +29,7 @@ struct ContentView: View {
 
     private var terminalColumn: some View {
         VStack(spacing: 0) {
-            TerminalPane(controller: controller)
+            TerminalPane(controller: controller, palette: theme.palette)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             InputBarView(controller: controller)
                 .frame(height: 150)

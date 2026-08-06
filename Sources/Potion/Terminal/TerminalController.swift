@@ -55,6 +55,11 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
 
     private let scanner = ShellIntegrationScanner()
     private let timeline = CommandTimeline()
+    /// Guards the terminal color work: the shell must be up before the native
+    /// colors are touched, and re-applying an identical palette is wasted draw.
+    private var hasStarted = false
+    private var appliedPalette: PotionPalette?
+
     private var history = InputHistory()
 
     private let specEngine: SpecEngine?
@@ -166,12 +171,20 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
 
     /// The terminal's own text uses a conventional, high-legibility scheme on a
     /// dark plum background. The witchy colors stay in the chrome, never here.
-    private static func applyTerminalPalette(to view: PotionTerminalView) {
-        let palette = PotionPalette()
+    private static func apply(_ palette: PotionPalette, to view: PotionTerminalView) {
         view.nativeBackgroundColor = palette.terminalBackgroundNS
         view.nativeForegroundColor = palette.terminalForegroundNS
         view.caretColor = palette.caretNS
         view.selectedTextBackgroundColor = palette.selectionNS
+    }
+
+    /// Re-colors a running terminal when the skin changes. Does nothing before
+    /// the shell is up: setting the native colors on an unattached view leaves
+    /// the terminal blank, which is why `start` applies them itself.
+    func applyPalette(_ palette: PotionPalette) {
+        guard hasStarted, palette != appliedPalette else { return }
+        appliedPalette = palette
+        Self.apply(palette, to: terminalView)
     }
 
     /// Keystrokes go to the terminal while a full-screen program owns the screen,
@@ -184,8 +197,8 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     // MARK: Lifecycle
 
     /// Spawns the shell. Safe to call once after the view is attached.
-    func start() {
-        guard terminalView.process == nil || terminalView.process.running == false else { return }
+    func start(palette: PotionPalette) {
+        guard !hasStarted else { return }
 
         let shell = Self.loginShell()
         let shellName = (shell as NSString).lastPathComponent
@@ -198,10 +211,13 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
             execName: "-\(shellName)"
         )
 
+        hasStarted = true
+
         // Apply the terminal palette only after the process is running. Setting
         // the native colors on a freshly constructed, unattached view breaks
         // SwiftTerm's initial draw, leaving the terminal blank.
-        Self.applyTerminalPalette(to: terminalView)
+        appliedPalette = palette
+        Self.apply(palette, to: terminalView)
     }
 
     private func ingest(_ slice: ArraySlice<UInt8>) {

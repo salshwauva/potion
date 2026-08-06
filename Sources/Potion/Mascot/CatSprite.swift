@@ -200,7 +200,10 @@ struct PixelCat: View {
 
     @EnvironmentObject private var theme: ThemeManager
 
-    private var furColor: Color { Color(red: 0.06, green: 0.04, blue: 0.09) }
+    /// The cat stays a black cat in every skin, but it is the skin's black: the
+    /// terminal well, which is the darkest rung. A fixed plum-black read as a
+    /// hole punched in the panel once the green and brown skins existed.
+    private var furColor: Color { theme.palette.terminalBackground }
 
     var body: some View {
         Canvas { context, _ in

@@ -49,13 +49,15 @@ struct ErrorsPanel: View {
     }
 
     private var emptyState: some View {
-        VStack {
+        VStack(spacing: 14) {
             Spacer()
+            PixelGlyph(glyph: theme.skin.motif[1], cell: 3)
+                .opacity(0.85)
             Text("When a command fails, a plain-English explanation appears here.")
                 .font(.callout)
                 .foregroundStyle(theme.palette.textSecondary)
                 .multilineTextAlignment(.center)
-                .padding()
+                .padding(.horizontal)
             Spacer()
         }
         .frame(maxWidth: .infinity)

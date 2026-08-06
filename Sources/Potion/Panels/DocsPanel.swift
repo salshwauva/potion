@@ -75,7 +75,7 @@ struct DocsPanel: View {
                                 .foregroundStyle(theme.palette.textPrimary)
                                 .frame(width: 68, alignment: .leading)
                             Text(spec.description ?? "")
-                                .font(.caption)
+                                .font(.system(size: 12))
                                 .foregroundStyle(theme.palette.textSecondary)
                                 .lineLimit(2)
                                 .fixedSize(horizontal: false, vertical: true)

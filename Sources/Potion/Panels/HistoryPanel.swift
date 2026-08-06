@@ -24,14 +24,14 @@ struct HistoryPanel: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text("History")
-                .font(theme.chromeFont(size: 12))
+                .font(theme.headingFont(size: 14))
                 .foregroundStyle(theme.palette.textPrimary)
             if let cwd = controller.currentDirectory, FolderPath.isFolder(cwd) {
                 Button {
                     FolderPath.open(cwd)
                 } label: {
                     Text(FolderPath.display(from: cwd))
-                        .font(.caption)
+                        .font(.system(size: 12, design: .monospaced))
                         .foregroundStyle(theme.palette.accentSoft)
                         .lineLimit(1)
                         .truncationMode(.head)
@@ -50,13 +50,15 @@ struct HistoryPanel: View {
     }
 
     private var emptyState: some View {
-        VStack {
+        VStack(spacing: 14) {
             Spacer()
+            PixelGlyph(glyph: theme.skin.motif[0], cell: 3)
+                .opacity(0.85)
             Text("Commands you run appear here, each with its result.")
                 .font(.callout)
                 .foregroundStyle(theme.palette.textSecondary)
                 .multilineTextAlignment(.center)
-                .padding()
+                .padding(.horizontal)
             Spacer()
         }
         .frame(maxWidth: .infinity)

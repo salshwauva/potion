@@ -5,8 +5,9 @@ import SwiftUI
 /// bitmap face lose their counters and run together. The pixel identity stays in
 /// the wordmark and the section headings, where the size can carry it.
 ///
-/// Selection reads twice, as a raised surface and an accent rule beneath it, so
-/// it survives both a squint and a colorblind viewer.
+/// Selection reads twice, as a raised surface and as the active skin's mark, so
+/// it survives both a squint and a colorblind viewer. Every mark is drawn inside
+/// the tab's own bounds, so no skin can push the bar into the content below it.
 struct PixelTabBar: View {
     @Binding var selection: CompanionPanel.Section
     @EnvironmentObject private var theme: ThemeManager
@@ -55,23 +56,87 @@ private struct TabButton: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
-    /// The fill and the accent rule share a clip, so the rule tucks into the
+    /// The fill and the skin's mark share a clip, so the mark tucks into the
     /// corners instead of running past them.
     private var background: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             RoundedRectangle(cornerRadius: 6).fill(fill)
-            Rectangle()
-                .fill(theme.palette.accent)
-                .frame(height: 2)
-                .opacity(isSelected ? 1 : 0)
+            if isSelected { mark }
         }
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .animation(.easeOut(duration: 0.12), value: isSelected)
         .animation(.easeOut(duration: 0.12), value: isHovering)
     }
 
+    @ViewBuilder
+    private var mark: some View {
+        switch theme.skin.signature {
+        case .rule:
+            VStack {
+                Spacer()
+                Rectangle().fill(theme.palette.accent).frame(height: 2)
+            }
+        case .bracket:
+            HStack {
+                Rectangle().fill(theme.palette.accent).frame(width: 2)
+                Spacer()
+                Rectangle().fill(theme.palette.accent).frame(width: 2)
+            }
+            .padding(.vertical, 4)
+        case .moonPhase:
+            VStack {
+                Spacer()
+                crescent.padding(.bottom, 3)
+            }
+        case .star:
+            VStack {
+                HStack {
+                    Spacer()
+                    Text("✦")
+                        .font(.system(size: 8))
+                        .foregroundStyle(theme.palette.accent)
+                }
+                Spacer()
+            }
+            .padding(4)
+        case .ribbon:
+            VStack {
+                Spacer()
+                RibbonTail().fill(theme.palette.accent).frame(height: 5)
+            }
+        }
+    }
+
+    /// A filled dot with a bite taken out, clipped back to the dot.
+    private var crescent: some View {
+        Circle()
+            .fill(theme.palette.accent)
+            .frame(width: 7, height: 7)
+            .overlay(
+                Circle()
+                    .fill(fill)
+                    .frame(width: 6, height: 6)
+                    .offset(x: 2.2)
+            )
+            .clipShape(Circle())
+    }
+
     private var fill: Color {
         if isSelected { return theme.palette.cardBackground }
         return isHovering ? theme.palette.cardBackground.opacity(0.45) : .clear
+    }
+}
+
+/// A bar notched into a V, so the selected tab reads as a ribbon bookmark.
+private struct RibbonTail: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.midY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
