@@ -54,7 +54,7 @@ struct ErrorsPanel: View {
             PixelGlyph(glyph: theme.skin.motif[1], cell: 3)
                 .opacity(0.85)
             Text("When a command fails, a plain-English explanation appears here.")
-                .font(.callout)
+                .font(theme.font(13))
                 .foregroundStyle(theme.palette.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
@@ -77,22 +77,22 @@ private struct ErrorCardView: View {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(theme.palette.running)
                 Text(item.card.title)
-                    .font(.headline)
+                    .font(theme.font(14, weight: .semibold))
                     .foregroundStyle(theme.palette.textPrimary)
             }
             Text(item.command)
-                .font(.system(.caption, design: .monospaced))
+                .font(theme.font(11, mono: true))
                 .foregroundStyle(theme.palette.textSecondary)
                 .textSelection(.enabled)
             Text(item.card.explanation)
-                .font(.callout)
+                .font(theme.font(13))
                 .foregroundStyle(theme.palette.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if !item.card.fixes.isEmpty {
                 Divider()
                 Text(item.card.fixes.count == 1 ? "Try this" : "Try one of these")
-                    .font(.caption.weight(.semibold))
+                    .font(theme.font(11, weight: .semibold))
                     .foregroundStyle(theme.palette.textSecondary)
                 ForEach(Array(item.card.fixes.enumerated()), id: \.offset) { _, fix in
                     fixView(fix)
@@ -108,10 +108,10 @@ private struct ErrorCardView: View {
     private func fixView(_ fix: ErrorFix) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(fix.description)
-                .font(.callout)
+                .font(theme.font(13))
             HStack(alignment: .top, spacing: 8) {
                 Text(fix.command)
-                    .font(.system(.callout, design: .monospaced))
+                    .font(theme.font(13, mono: true))
                     .foregroundStyle(theme.palette.textPrimary)
                     .textSelection(.enabled)
                     .padding(7)
@@ -123,7 +123,7 @@ private struct ErrorCardView: View {
             }
             let phrases = subtitle(fix.command)
             if !phrases.isEmpty {
-                SubtitleText(subtitle: phrases, font: .caption)
+                SubtitleText(subtitle: phrases, size: 11)
             }
         }
     }

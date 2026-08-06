@@ -41,7 +41,7 @@ struct WindowChromeBar: View {
                 FolderPath.open(cwd)
             } label: {
                 Text(FolderPath.display(from: cwd))
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(theme.font(12, mono: true))
                     .foregroundStyle(theme.palette.accentSoft)
                     .lineLimit(1)
                     .truncationMode(.head)
@@ -51,7 +51,7 @@ struct WindowChromeBar: View {
             .linkCursor()
         } else {
             Text(controller.currentDirectory.map(FolderPath.display) ?? "")
-                .font(.system(size: 12, design: .monospaced))
+                .font(theme.font(12, mono: true))
                 .foregroundStyle(theme.palette.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.head)

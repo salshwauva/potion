@@ -6,9 +6,11 @@ import SwiftUI
 /// the difference at a glance. Shared by the live bar and the History Panel.
 struct SubtitleText: View {
     let subtitle: Subtitle
-    var font: Font = .callout
+    var size: CGFloat = 13
 
     @EnvironmentObject private var theme: ThemeManager
+
+    private var font: Font { theme.font(size) }
 
     var body: some View {
         Text(attributed)
@@ -49,7 +51,7 @@ struct SubtitleBar: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("SUBTITLE")
-                .font(theme.labelFont(size: 9))
+                .font(theme.labelFont(size: 10))
                 .tracking(theme.labelTracking)
                 .foregroundStyle(theme.palette.rim)
             if !controller.liveSubtitle.isEmpty {

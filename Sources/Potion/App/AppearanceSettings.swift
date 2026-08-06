@@ -27,6 +27,22 @@ struct AppearanceSettings: View {
 
                 Divider()
 
+                section("Text size") {
+                    Picker("Text size", selection: $theme.textSize) {
+                        ForEach(TextSize.allCases) { size in
+                            Text(size.displayName).tag(size)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    Text("Scales every label, caption, and code sample in the window, including the composer. The terminal's own text is set by its font.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Divider()
+
                 section("Type") {
                     Picker("Font pairing", selection: $theme.pairing) {
                         ForEach(FontPairing.allCases) { pairing in

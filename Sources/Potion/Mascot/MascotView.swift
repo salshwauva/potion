@@ -97,7 +97,7 @@ struct MascotNook: View {
         HStack(spacing: 10) {
             MascotView(state: state)
             Text(caption)
-                .font(.system(size: 12))
+                .font(theme.font(13))
                 .foregroundStyle(theme.palette.textSecondary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)

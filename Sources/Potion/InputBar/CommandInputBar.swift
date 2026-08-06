@@ -6,6 +6,9 @@ import SwiftUI
 /// the arrows navigate history, and later phases add autocomplete on Tab.
 struct CommandInputBar: NSViewRepresentable {
     @ObservedObject var controller: TerminalController
+    /// Resolved by the caller from the theme, so the composer tracks the
+    /// reader's text-size choice like the rest of the window.
+    let fontSize: CGFloat
 
     func makeCoordinator() -> Coordinator {
         Coordinator(controller: controller)
@@ -15,7 +18,7 @@ struct CommandInputBar: NSViewRepresentable {
         let field = NSTextField(frame: .zero)
         field.delegate = context.coordinator
         field.placeholderString = "Type a command, press Return to run"
-        field.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
+        field.font = .monospacedSystemFont(ofSize: fontSize, weight: .regular)
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
@@ -31,6 +34,9 @@ struct CommandInputBar: NSViewRepresentable {
     func updateNSView(_ field: NSTextField, context: Context) {
         if field.stringValue != controller.draft {
             field.stringValue = controller.draft
+        }
+        if field.font?.pointSize != fontSize {
+            field.font = .monospacedSystemFont(ofSize: fontSize, weight: .regular)
         }
     }
 

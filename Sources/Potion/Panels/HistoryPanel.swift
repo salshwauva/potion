@@ -31,7 +31,7 @@ struct HistoryPanel: View {
                     FolderPath.open(cwd)
                 } label: {
                     Text(FolderPath.display(from: cwd))
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(theme.font(12, mono: true))
                         .foregroundStyle(theme.palette.accentSoft)
                         .lineLimit(1)
                         .truncationMode(.head)
@@ -41,7 +41,7 @@ struct HistoryPanel: View {
                 .linkCursor()
             } else {
                 Text("working directory unknown")
-                    .font(.caption)
+                    .font(theme.font(11))
                     .foregroundStyle(theme.palette.textSecondary)
             }
         }
@@ -55,7 +55,7 @@ struct HistoryPanel: View {
             PixelGlyph(glyph: theme.skin.motif[0], cell: 3)
                 .opacity(0.85)
             Text("Commands you run appear here, each with its result.")
-                .font(.callout)
+                .font(theme.font(13))
                 .foregroundStyle(theme.palette.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
@@ -98,7 +98,7 @@ private struct HistoryCard: View {
                 statusBadge
                 if record.command.isEmpty {
                     Text("(no command text)")
-                        .font(.system(.body, design: .monospaced))
+                        .font(theme.font(13, mono: true))
                         .foregroundStyle(theme.palette.textSecondary)
                 } else {
                     CommandText(command: record.command, cwd: record.cwd)
@@ -106,7 +106,7 @@ private struct HistoryCard: View {
                 }
             }
             if !subtitle.isEmpty {
-                SubtitleText(subtitle: subtitle, font: .caption)
+                SubtitleText(subtitle: subtitle, size: 11)
             }
             metadata
             actions
@@ -145,7 +145,7 @@ private struct HistoryCard: View {
                 Text(formatDuration(duration))
             }
         }
-        .font(.caption)
+        .font(theme.font(11))
         .foregroundStyle(theme.palette.textSecondary)
     }
 
@@ -160,7 +160,7 @@ private struct HistoryCard: View {
                 Button("Explain", action: onExplain)
             }
         }
-        .font(.caption)
+        .font(theme.font(11))
         .buttonStyle(.potionLink)
     }
 

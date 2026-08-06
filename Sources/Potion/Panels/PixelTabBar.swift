@@ -42,7 +42,7 @@ private struct TabButton: View {
     var body: some View {
         Button(action: action) {
             Text(label)
-                .font(theme.labelFont(size: 11))
+                .font(theme.labelFont(size: 12))
                 .tracking(theme.labelTracking)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity)
@@ -93,7 +93,7 @@ private struct TabButton: View {
                 HStack {
                     Spacer()
                     Text("✦")
-                        .font(.system(size: 8))
+                        .font(theme.font(8))
                         .foregroundStyle(theme.palette.accent)
                 }
                 Spacer()

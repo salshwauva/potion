@@ -71,11 +71,11 @@ struct DocsPanel: View {
                     } label: {
                         HStack(alignment: .firstTextBaseline, spacing: 10) {
                             Text(spec.name)
-                                .font(.system(.body, design: .monospaced))
+                                .font(theme.font(13, mono: true))
                                 .foregroundStyle(theme.palette.textPrimary)
                                 .frame(width: 68, alignment: .leading)
                             Text(spec.description ?? "")
-                                .font(.system(size: 12))
+                                .font(theme.font(12))
                                 .foregroundStyle(theme.palette.textSecondary)
                                 .lineLimit(2)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -96,16 +96,16 @@ struct DocsPanel: View {
     private func missingPage(for command: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(command)
-                .font(.system(.title2, design: .monospaced))
+                .font(theme.font(20, weight: .semibold, mono: true))
                 .foregroundStyle(theme.palette.textPrimary)
             if let spec = controller.commonCommands.first(where: { $0.names.contains(command) }),
                let description = spec.description {
                 Text(description)
-                    .font(.callout)
+                    .font(theme.font(13))
                     .foregroundStyle(theme.palette.textSecondary)
             }
             Text("No bundled documentation page for this one yet.")
-                .font(.caption)
+                .font(theme.font(11))
                 .foregroundStyle(theme.palette.textTertiary)
             Spacer()
         }
@@ -123,7 +123,7 @@ struct DocsPanel: View {
                         searchText = ""
                     } label: {
                         Text(name)
-                            .font(.system(.body, design: .monospaced))
+                            .font(theme.font(13, mono: true))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
@@ -133,7 +133,7 @@ struct DocsPanel: View {
                 }
                 if results.isEmpty {
                     Text("No command matches \"\(searchText)\".")
-                        .font(.callout)
+                        .font(theme.font(13))
                         .foregroundStyle(theme.palette.textSecondary)
                         .padding()
                 }
@@ -146,10 +146,10 @@ struct DocsPanel: View {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(page.name)
-                        .font(.system(.title2, design: .monospaced))
+                        .font(theme.font(20, weight: .semibold, mono: true))
                         .foregroundStyle(theme.palette.textPrimary)
                     Text(page.description)
-                        .font(.callout)
+                        .font(theme.font(13))
                         .foregroundStyle(theme.palette.textSecondary)
                 }
                 ForEach(Array(page.examples.enumerated()), id: \.offset) { _, example in
@@ -164,10 +164,10 @@ struct DocsPanel: View {
     private func exampleView(_ example: TldrExample) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(example.description)
-                .font(.callout)
+                .font(theme.font(13))
             HStack(alignment: .top, spacing: 8) {
                 Text(example.command)
-                    .font(.system(.callout, design: .monospaced))
+                    .font(theme.font(13, mono: true))
                     .textSelection(.enabled)
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -178,7 +178,7 @@ struct DocsPanel: View {
             }
             let subtitle = controller.subtitle(for: example.command)
             if !subtitle.isEmpty {
-                SubtitleText(subtitle: subtitle, font: .caption)
+                SubtitleText(subtitle: subtitle, size: 11)
             }
         }
         .padding(.bottom, 4)

@@ -54,10 +54,16 @@ reading as structure; the pre-skin palette had `windowChrome` and
 WCAG ratios between adjacent dark surfaces are inherently near 1.1:1. Lightness
 distance is the lever, not contrast ratio.
 
-**Text** is four levels at saturation 0.24, lightness `0.94 / 0.80 / 0.68 / 0.56`.
-Those numbers were solved against all six hues at once: the tightest pair
-anywhere (tertiary on card) clears 4.85:1 and muted clears 3:1. The warm hues
-are the binding constraint, not the plum the app started on.
+**Text** is four levels at saturation 0.12, lightness `0.88 / 0.78 / 0.70 / 0.58`.
+Solved against all six hues at once: the tightest pair anywhere (tertiary on
+card) clears 5:1 and muted clears 3.2:1. The warm hues are the binding
+constraint, not the plum the app started on.
+
+Primary is 0.88, not near-white, and the tint is a trace rather than a match for
+the surfaces. Both are legibility decisions, not aesthetic ones. Light text on a
+surface this deep blooms, and the brighter and more saturated the glyph the more
+its edges bleed; the first pass ran primary at 0.94 and text saturation at 0.24
+and read soft at every size.
 
 `terminalForeground` is lightness 0.90, held under `textPrimary`. The well is
 the darkest surface and pure white on it is tiring across a long session.
@@ -83,17 +89,42 @@ pairing:
 Without the correction the two bundled pixel faces differ by 79% at the same
 nominal size, so no single call-site value can serve both.
 
-**`headingFont(size:)`** vends SF rounded semibold for section headings inside
-the panels. Title case, no tracking.
+**`headingFont(size:)`** vends SF semibold for section headings inside the
+panels. Title case, no tracking.
 
-**`labelFont(size:)`** vends SF rounded semibold for micro labels: tab titles,
-section eyebrows, badges. Pair with `labelTracking` (0.9) when set in caps.
+**`labelFont(size:)`** vends SF **medium** for micro labels: tab titles, section
+eyebrows, badges. Pair with `labelTracking` (0.9) when set in caps.
+
+**`font(_:weight:mono:)`** vends everything else: body copy, metadata, captions,
+code. Every reading surface in the app goes through it.
+
+Three rules learned the hard way, in order of how much they cost:
+
+1. **No SF Rounded.** It was the first choice for headings and labels and it is
+   a display variant; its rounded terminals cost letterform distinction at UI
+   sizes. Default SF is measurably crisper at 11 to 14pt.
+2. **Medium, not semibold, on dark.** Light-on-dark renders optically heavier
+   than the same weight on light, so semibold labels fill in their own counters.
+3. **Nothing bypasses the theme.** The app previously mixed theme fonts with raw
+   `.caption` / `.callout` / `.system(size:)` at 39 call sites, which meant no
+   single control could reach the whole window.
 
 The rule underneath all three: **a pixel face never carries information.** It
 lost the tab bar first (VT323 at 8pt drew 4.5pt caps), then the mascot caption,
 which was a full sentence set in a bitmap face, then the section headings. The
 identity is carried by the wordmark, the mascot sprite, and the motif glyphs,
 which is plenty without also taxing the text that has to be read.
+
+## Text size
+
+`TextSize` (Compact 0.92 · Standard 1.00 · Large 1.15 · Largest 1.32) multiplies
+every size the theme vends, persisted under `appearance.textSize` and set in
+Settings. `theme.scaled(_:)` exposes the multiplier for the two places that need
+a raw number: the AppKit composer field and its row height.
+
+It deliberately does not touch SwiftTerm's own font. Terminal type size is its
+own setting in every terminal, and coupling it to the chrome would resize the
+PTY grid underneath the reader.
 
 ## Pixel art
 
@@ -113,7 +144,7 @@ Glyphs appear in the History and Errors empty states, drawn from
 
 ## Component patterns
 
-**Tab** — 30pt height, `labelFont(11)` + tracking, 6pt radius, 2pt spacing.
+**Tab** — 30pt height, `labelFont(12)` + tracking, 6pt radius, 2pt spacing.
 Selection is `cardBackground` fill plus the skin's mark, both inside a shared
 clip. Hover is the fill at 45%. Transitions `.easeOut(0.12)`. Carries
 `.isSelected` for VoiceOver.
@@ -137,6 +168,9 @@ a popup, because the choice is a visual one. Renders without the environment via
 - Never hardcode an `NSColor` for the terminal. `PotionPalette` vends
   `terminalBackgroundNS`, `terminalForegroundNS`, `caretNS`, `selectionNS`.
 - Never call `chromeFont` for anything but the wordmark.
+- Never use `.caption`, `.callout`, `.headline`, or a bare `.system(size:)`.
+  Go through `theme.font(_:weight:mono:)` or the text-size control cannot reach
+  it. This is the single easiest rule to break here.
 - The terminal's native colors must not be touched before the shell is running,
   or SwiftTerm's initial draw breaks and the terminal renders blank. `start`
   applies them itself; `applyPalette` no-ops until `hasStarted`.

@@ -111,9 +111,17 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
     private static let surfaceLightness: [Double] = [0.075, 0.115, 0.155, 0.235, 0.300]
 
     /// Lightness of the four text levels. Solved so the tightest pair across
-    /// every skin (tertiary on card) clears 4.85:1 and muted clears 3:1.
-    private static let textLightness: [Double] = [0.94, 0.80, 0.68, 0.56]
-    private static let textSaturation: Double = 0.24
+    /// every skin (tertiary on card) clears 5:1 and muted clears 3.2:1.
+    /// Primary sits at 0.88, not near-white. Light text on a surface this deep
+    /// blooms: the brighter the glyph, the more it bleeds into the background
+    /// and the softer its edges read. Pulling it down sharpens the letterforms
+    /// and still leaves 13:1.
+    private static let textLightness: [Double] = [0.88, 0.78, 0.70, 0.58]
+
+    /// Text carries only a trace of the skin's hue. The surfaces are where the
+    /// color lives; text tinted as far as the surfaces sits too close to them and
+    /// reads soft, which is most of what made the panels hard on the eye.
+    private static let textSaturation: Double = 0.12
 
     private var hue: Double {
         switch self {
@@ -296,6 +304,36 @@ enum FontPairing: String, CaseIterable, Identifiable {
     }
 }
 
+/// How large the interface text runs. Every font the theme vends is multiplied
+/// by this, so one control governs the whole window rather than the reader
+/// hunting for the one label that stayed small.
+enum TextSize: String, CaseIterable, Identifiable {
+    case compact
+    case standard
+    case large
+    case largest
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .compact: return "Compact"
+        case .standard: return "Standard"
+        case .large: return "Large"
+        case .largest: return "Largest"
+        }
+    }
+
+    var scale: CGFloat {
+        switch self {
+        case .compact: return 0.92
+        case .standard: return 1.00
+        case .large: return 1.15
+        case .largest: return 1.32
+        }
+    }
+}
+
 /// Holds the active skin and font pairing and vends themed fonts and colors.
 /// Injected as an environment object so no view reaches for a raw color or font
 /// name. Both choices persist across launches.
@@ -303,6 +341,7 @@ final class ThemeManager: ObservableObject {
     private enum Key {
         static let skin = "appearance.skin"
         static let pairing = "appearance.fontPairing"
+        static let textSize = "appearance.textSize"
     }
 
     @Published var skin: Skin {
@@ -313,12 +352,17 @@ final class ThemeManager: ObservableObject {
         didSet { UserDefaults.standard.set(pairing.rawValue, forKey: Key.pairing) }
     }
 
+    @Published var textSize: TextSize {
+        didSet { UserDefaults.standard.set(textSize.rawValue, forKey: Key.textSize) }
+    }
+
     var palette: PotionPalette { skin.palette }
 
     init() {
         let defaults = UserDefaults.standard
         skin = defaults.string(forKey: Key.skin).flatMap(Skin.init(rawValue:)) ?? .alchemist
         pairing = defaults.string(forKey: Key.pairing).flatMap(FontPairing.init(rawValue:)) ?? .glow
+        textSize = defaults.string(forKey: Key.textSize).flatMap(TextSize.init(rawValue:)) ?? .standard
         Self.registerBundledFonts()
     }
 
@@ -340,26 +384,45 @@ final class ThemeManager: ObservableObject {
     /// cap height, so the same argument reads the same in every pairing. Intended
     /// for 12pt and up: the pixel faces lose their counters below that.
     func chromeFont(size: CGFloat) -> Font {
+        let size = scaled(size)
         if let name = pairing.chromeFontName {
             return .custom(name, fixedSize: size * pairing.chromeOpticalScale)
         }
         return .system(size: size, weight: .bold, design: .rounded)
     }
 
+    /// Everything the interface reads: body copy, metadata, captions, code.
+    /// Every call site goes through here so `textSize` reaches all of it. The
+    /// app used to mix these with raw `.caption` and `.callout`, which is why
+    /// no single control could reach the whole window.
+    func font(_ size: CGFloat, weight: Font.Weight = .regular, mono: Bool = false) -> Font {
+        if mono, let name = pairing.monoFontName {
+            return .custom(name, fixedSize: scaled(size))
+        }
+        return .system(size: scaled(size), weight: weight, design: mono ? .monospaced : .default)
+    }
+
+    /// Point size after the reader's text-size choice.
+    func scaled(_ size: CGFloat) -> CGFloat { (size * textSize.scale).rounded() }
+
     /// Section headings inside the panels. A UI face, not a pixel one: a heading
     /// names content, and the pixel identity is carried by the wordmark, the
     /// mascot, and the motif glyphs without also taxing the text that has to be
     /// read. Title case, so no tracking.
     func headingFont(size: CGFloat) -> Font {
-        .system(size: size, weight: .semibold, design: .rounded)
+        .system(size: scaled(size), weight: .semibold)
     }
 
     /// Micro labels: tab titles, section eyebrows, badges. Always a UI face,
     /// never a pixel one. Small all-caps in a bitmap face is illegible at any
     /// point size the chrome can afford, so the theme does not offer the choice.
     /// Pair with `labelTracking`.
+    ///
+    /// Medium, not semibold. Light-on-dark text renders optically heavier than
+    /// the same weight on a light background, so a semibold label at this size
+    /// fills in its own counters and turns into a smudge.
     func labelFont(size: CGFloat) -> Font {
-        .system(size: size, weight: .semibold, design: .rounded)
+        .system(size: scaled(size), weight: .medium)
     }
 
     /// Letterspacing for `labelFont` text set in caps, which needs the air.
@@ -367,10 +430,7 @@ final class ThemeManager: ObservableObject {
 
     /// Readable monospaced font for the subtitle bar and code snippets.
     func monoFont(size: CGFloat) -> Font {
-        if let name = pairing.monoFontName {
-            return .custom(name, fixedSize: size)
-        }
-        return .system(size: size, design: .monospaced)
+        font(size, mono: true)
     }
 
     private static func registerBundledFonts() {

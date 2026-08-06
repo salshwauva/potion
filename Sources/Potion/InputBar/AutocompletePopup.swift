@@ -23,7 +23,7 @@ struct AutocompletePopup: View {
                 }
                 if controller.completions.count > maxRows {
                     Text("and \(controller.completions.count - maxRows) more")
-                        .font(.caption2)
+                        .font(theme.font(10))
                         .foregroundStyle(theme.palette.textTertiary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
@@ -40,12 +40,12 @@ struct AutocompletePopup: View {
     private func row(_ completion: Completion, selected: Bool) -> some View {
         HStack(spacing: 10) {
             Text(completion.display)
-                .font(.system(.body, design: .monospaced))
+                .font(theme.font(13, mono: true))
                 .foregroundStyle(theme.palette.textPrimary)
                 .layoutPriority(1)
             if let description = completion.description {
                 Text(description)
-                    .font(.caption)
+                    .font(theme.font(11))
                     .foregroundStyle(theme.palette.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
