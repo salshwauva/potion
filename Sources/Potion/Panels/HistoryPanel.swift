@@ -54,7 +54,7 @@ struct HistoryPanel: View {
             Spacer()
             Text("Commands you run appear here, each with its result.")
                 .font(.callout)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.palette.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding()
             Spacer()
@@ -159,7 +159,7 @@ private struct HistoryCard: View {
             }
         }
         .font(.caption)
-        .buttonStyle(.link)
+        .buttonStyle(.potionLink)
     }
 
     private func copy(_ text: String) {

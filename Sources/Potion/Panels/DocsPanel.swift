@@ -30,7 +30,7 @@ struct DocsPanel: View {
 
     private var searchField: some View {
         HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+            Image(systemName: "magnifyingglass").foregroundStyle(theme.palette.textTertiary)
             TextField("Search commands", text: $searchText)
                 .textFieldStyle(.plain)
         }
@@ -57,8 +57,9 @@ struct DocsPanel: View {
     private var commonCommands: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
-                Text("Common commands")
-                    .font(theme.chromeFont(size: 9))
+                Text("COMMON COMMANDS")
+                    .font(theme.labelFont(size: 10))
+                    .tracking(theme.labelTracking)
                     .foregroundStyle(theme.palette.rim)
                     .padding(.horizontal, 12)
                     .padding(.top, 10)
@@ -133,7 +134,7 @@ struct DocsPanel: View {
                 if results.isEmpty {
                     Text("No command matches \"\(searchText)\".")
                         .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.palette.textSecondary)
                         .padding()
                 }
             }

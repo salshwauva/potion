@@ -14,6 +14,7 @@ struct IdentifiedErrorCard: Identifiable, Equatable {
 /// terminal untouched.
 struct ErrorsPanel: View {
     @ObservedObject var controller: TerminalController
+    @EnvironmentObject private var theme: ThemeManager
 
     var body: some View {
         Group {
@@ -52,7 +53,7 @@ struct ErrorsPanel: View {
             Spacer()
             Text("When a command fails, a plain-English explanation appears here.")
                 .font(.callout)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.palette.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding()
             Spacer()

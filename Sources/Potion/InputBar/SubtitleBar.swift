@@ -48,8 +48,9 @@ struct SubtitleBar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("subtitle")
-                .font(theme.chromeFont(size: 8))
+            Text("SUBTITLE")
+                .font(theme.labelFont(size: 9))
+                .tracking(theme.labelTracking)
                 .foregroundStyle(theme.palette.rim)
             if !controller.liveSubtitle.isEmpty {
                 SubtitleText(subtitle: controller.liveSubtitle)

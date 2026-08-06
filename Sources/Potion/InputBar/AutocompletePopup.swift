@@ -24,7 +24,7 @@ struct AutocompletePopup: View {
                 if controller.completions.count > maxRows {
                     Text("and \(controller.completions.count - maxRows) more")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.palette.textTertiary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                 }
@@ -41,7 +41,7 @@ struct AutocompletePopup: View {
         HStack(spacing: 10) {
             Text(completion.display)
                 .font(.system(.body, design: .monospaced))
-                .foregroundStyle(selected ? theme.palette.accent : theme.palette.textPrimary)
+                .foregroundStyle(theme.palette.textPrimary)
                 .layoutPriority(1)
             if let description = completion.description {
                 Text(description)
@@ -54,6 +54,15 @@ struct AutocompletePopup: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
-        .background(selected ? theme.palette.accent.opacity(0.18) : Color.clear)
+        .background(alignment: .leading) {
+            // Selection is a tint plus a rule, never a text-color change: accent
+            // pink on the raised card only reaches 3.8:1, short of AA for body.
+            ZStack(alignment: .leading) {
+                theme.palette.accent.opacity(selected ? 0.18 : 0)
+                theme.palette.accent
+                    .frame(width: 2)
+                    .opacity(selected ? 1 : 0)
+            }
+        }
     }
 }

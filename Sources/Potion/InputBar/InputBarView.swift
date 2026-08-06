@@ -40,11 +40,11 @@ struct InputBarView: View {
                 Text(passthrough ? "Return to input" : "Send keys to terminal")
                     .font(.caption)
             }
-            .buttonStyle(.link)
+            .buttonStyle(.potionLink)
             .keyboardShortcut("t", modifiers: [.command, .shift])
             Text("⌘⇧T")
                 .font(.system(size: 10, design: .monospaced))
-                .foregroundStyle(theme.palette.textTertiary)
+                .foregroundStyle(theme.palette.textSecondary)
                 .padding(.horizontal, 7)
                 .padding(.vertical, 2)
                 .overlay(

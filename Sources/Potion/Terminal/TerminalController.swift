@@ -167,10 +167,11 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     /// The terminal's own text uses a conventional, high-legibility scheme on a
     /// dark plum background. The witchy colors stay in the chrome, never here.
     private static func applyTerminalPalette(to view: PotionTerminalView) {
-        view.nativeBackgroundColor = NSColor(red: 0.12, green: 0.08, blue: 0.16, alpha: 1)
-        view.nativeForegroundColor = NSColor(red: 0.91, green: 0.88, blue: 0.96, alpha: 1)
-        view.caretColor = NSColor(red: 1.0, green: 0.31, blue: 0.64, alpha: 1)
-        view.selectedTextBackgroundColor = NSColor(red: 1.0, green: 0.44, blue: 0.71, alpha: 0.35)
+        let palette = PotionPalette()
+        view.nativeBackgroundColor = palette.terminalBackgroundNS
+        view.nativeForegroundColor = palette.terminalForegroundNS
+        view.caretColor = palette.caretNS
+        view.selectedTextBackgroundColor = palette.selectionNS
     }
 
     /// Keystrokes go to the terminal while a full-screen program owns the screen,
