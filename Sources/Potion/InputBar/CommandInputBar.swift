@@ -6,9 +6,8 @@ import SwiftUI
 /// the arrows navigate history, and later phases add autocomplete on Tab.
 struct CommandInputBar: NSViewRepresentable {
     @ObservedObject var controller: TerminalController
-    /// Resolved by the caller from the theme, so the composer tracks the
-    /// reader's text-size choice like the rest of the window.
     let fontSize: CGFloat
+    @EnvironmentObject private var theme: ThemeManager
 
     func makeCoordinator() -> Coordinator {
         Coordinator(controller: controller)
@@ -22,8 +21,7 @@ struct CommandInputBar: NSViewRepresentable {
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
-        // Readable on the plum chrome. Mirrors the theme text tokens.
-        field.textColor = NSColor(red: 0.95, green: 0.92, blue: 1.0, alpha: 1)
+        field.textColor = NSColor(theme.palette.textPrimary)
         field.lineBreakMode = .byClipping
         field.cell?.isScrollable = true
         field.cell?.wraps = false
@@ -32,11 +30,20 @@ struct CommandInputBar: NSViewRepresentable {
     }
 
     func updateNSView(_ field: NSTextField, context: Context) {
-        if field.stringValue != controller.draft {
-            field.stringValue = controller.draft
-        }
+        let font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
         if field.font?.pointSize != fontSize {
-            field.font = .monospacedSystemFont(ofSize: fontSize, weight: .regular)
+            field.font = font
+        }
+        if field.stringValue != controller.draft {
+            let highlighted = CommandHighlighter.highlightNS(controller.draft, palette: theme.palette)
+            let mutable = NSMutableAttributedString(attributedString: highlighted)
+            mutable.addAttribute(.font, value: font, range: NSRange(location: 0, length: mutable.length))
+            
+            let selectedRange = field.currentEditor()?.selectedRange
+            field.attributedStringValue = mutable
+            if let selectedRange {
+                field.currentEditor()?.selectedRange = selectedRange
+            }
         }
     }
 

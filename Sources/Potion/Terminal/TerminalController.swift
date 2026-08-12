@@ -49,6 +49,11 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
     /// The error card the user asked to see, used to scroll and switch tabs.
     @Published var focusedErrorId: UUID?
 
+    /// Controls whether the right learning companion sidebar is visible.
+    @Published var isSidebarVisible: Bool = true
+    /// Controls whether the quick help & keyboard cheatsheet modal is open.
+    @Published var showQuickHelpModal: Bool = false
+
     let tldrLibrary = TldrLibrary()
     private let errorEngine: ErrorRuleEngine?
     private lazy var knownCommands: [String] = Self.scanPath()
@@ -532,4 +537,172 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
 
         return env
     }
+
+    // MARK: Sidebar & Learning Helpers
+
+    func toggleSidebar() {
+        isSidebarVisible.toggle()
+    }
+
+    func toggleQuickHelp() {
+        showQuickHelpModal.toggle()
+    }
+
+    func tokenBreakdown(for line: String) -> [IdentifiedTokenBreakdown] {
+        let tokens = Tokenizer.tokenize(line)
+        guard !tokens.isEmpty else { return [] }
+        let sub = subtitle(for: line)
+        let segments = Tokenizer.segments(tokens)
+
+        var tokenDomainMap: [Int: CommandDomain] = [:]
+        for segment in segments {
+            for (pos, token) in segment.tokens.enumerated() {
+                if let idx = tokens.firstIndex(where: { $0.start == token.start && $0.raw == token.raw }) {
+                    tokenDomainMap[idx] = CommandDomain.classify(token: token, positionInSegment: pos)
+                }
+            }
+        }
+
+        var result: [IdentifiedTokenBreakdown] = []
+        for (index, token) in tokens.enumerated() {
+            let domain = tokenDomainMap[index] ?? .generic
+            var cat = domain.displayName
+            if token.value.hasPrefix("$") { cat = "Variable" }
+
+            let matchingPhrase = sub.phrases.first { phrase in
+                if let start = phrase.sourceStart, let end = phrase.sourceEnd {
+                    return token.start >= start && token.end <= end
+                }
+                return false
+            }
+
+            let exp = matchingPhrase?.text ?? (token.kind == .word ? "Run program \(token.value)" : "Value \(token.raw)")
+            let conf = matchingPhrase?.confidence ?? .known
+
+            result.append(IdentifiedTokenBreakdown(
+                token: token,
+                category: cat,
+                domain: domain,
+                explanation: exp,
+                confidence: conf
+            ))
+        }
+
+        return result
+    }
+
+    func contextualSuggestions() -> [CommandSuggestion] {
+        var items: [CommandSuggestion] = []
+        let cwd = currentDirectory ?? FileManager.default.currentDirectoryPath
+
+        let fm = FileManager.default
+        let hasGit = fm.fileExists(atPath: (cwd as NSString).appendingPathComponent(".git"))
+        let hasSwift = fm.fileExists(atPath: (cwd as NSString).appendingPathComponent("Package.swift")) ||
+                         fm.fileExists(atPath: (cwd as NSString).appendingPathComponent("project.yml"))
+        let hasNode = fm.fileExists(atPath: (cwd as NSString).appendingPathComponent("package.json"))
+
+        if hasGit {
+            items.append(CommandSuggestion(
+                command: "git status",
+                title: "Check Git Status",
+                description: "View working tree changes and staged files",
+                category: "Git Workflow",
+                badge: "GIT"
+            ))
+            items.append(CommandSuggestion(
+                command: "git log --oneline -n 5",
+                title: "View Recent Commits",
+                description: "Compact timeline of recent repository commits",
+                category: "Git Workflow",
+                badge: "GIT"
+            ))
+        }
+
+        if hasSwift {
+            items.append(CommandSuggestion(
+                command: "swift test",
+                title: "Run Swift Unit Tests",
+                description: "Execute all unit test suites in project",
+                category: "Build & Test",
+                badge: "SWIFT"
+            ))
+        }
+
+        if hasNode {
+            items.append(CommandSuggestion(
+                command: "npm test",
+                title: "Run NPM Tests",
+                description: "Execute test scripts defined in package.json",
+                category: "Node.js",
+                badge: "NPM"
+            ))
+        }
+
+        items.append(CommandSuggestion(
+            command: "ls -la",
+            title: "List Detailed Files",
+            description: "Show all files including hidden ones with sizes",
+            category: "Directory Inspection",
+            badge: "FILES"
+        ))
+
+        items.append(CommandSuggestion(
+            command: "pwd",
+            title: "Print Working Directory",
+            description: "Display absolute path of current folder",
+            category: "Navigation",
+            badge: "NAV"
+        ))
+
+        if let lastRecord = records.last {
+            let cmd = lastRecord.command.trimmingCharacters(in: .whitespaces)
+            if cmd.hasPrefix("mkdir ") {
+                let folder = String(cmd.dropFirst(6)).trimmingCharacters(in: .whitespaces)
+                items.insert(CommandSuggestion(
+                    command: "cd \(folder)",
+                    title: "Enter New Folder",
+                    description: "Navigate into directory created by previous command",
+                    category: "Suggested Next Step",
+                    badge: "NEXT"
+                ), at: 0)
+            } else if cmd.hasPrefix("git add") {
+                items.insert(CommandSuggestion(
+                    command: "git commit -m \"Update\"",
+                    title: "Commit Staged Changes",
+                    description: "Save staged changes into git repository history",
+                    category: "Suggested Next Step",
+                    badge: "NEXT"
+                ), at: 0)
+            }
+        }
+
+        return items
+    }
 }
+
+public struct IdentifiedTokenBreakdown: Identifiable, Equatable {
+    public let id = UUID()
+    public let token: Token
+    public let category: String
+    let domain: CommandDomain
+    public let explanation: String
+    public let confidence: SubtitlePhrase.Confidence
+
+    public static func == (lhs: IdentifiedTokenBreakdown, rhs: IdentifiedTokenBreakdown) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
+public struct CommandSuggestion: Identifiable, Equatable {
+    public let id = UUID()
+    public let command: String
+    public let title: String
+    public let description: String
+    public let category: String
+    public let badge: String?
+
+    public static func == (lhs: CommandSuggestion, rhs: CommandSuggestion) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+

@@ -31,29 +31,50 @@ struct InputBarView: View {
                 .fill(passthrough ? theme.palette.running : theme.palette.success)
                 .frame(width: 7, height: 7)
                 .shadow(color: (passthrough ? theme.palette.running : theme.palette.success).opacity(0.8), radius: 3)
+            
             Text(passthrough ? passthroughReason : statusText)
-                .font(theme.font(11))
+                .font(theme.font(11, weight: .medium))
                 .foregroundStyle(theme.palette.textSecondary)
                 .lineLimit(1)
+            
             Spacer()
+
+            if !passthrough && controller.isCompletionVisible {
+                shortcutPill("Tab", label: "Complete")
+            }
+
+            if !passthrough && !controller.draft.isEmpty {
+                shortcutPill("Return", label: "Execute")
+            }
+
             Button(action: controller.toggleManualPassthrough) {
-                Text(passthrough ? "Return to input" : "Send keys to terminal")
+                Text(passthrough ? "Return to input" : "Direct terminal")
                     .font(theme.font(11))
             }
             .buttonStyle(.potionLink)
             .keyboardShortcut("t", modifiers: [.command, .shift])
-            Text("⌘⇧T")
-                .font(theme.font(10, mono: true))
-                .foregroundStyle(theme.palette.textSecondary)
-                .padding(.horizontal, 7)
-                .padding(.vertical, 2)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(theme.palette.divider, lineWidth: 1)
-                )
+            
+            shortcutPill("⌘⇧T", label: nil)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 5)
+    }
+
+    private func shortcutPill(_ keys: String, label: String?) -> some View {
+        HStack(spacing: 4) {
+            Text(keys)
+                .font(theme.font(10, weight: .semibold, mono: true))
+                .foregroundStyle(theme.palette.textPrimary)
+            if let label {
+                Text(label)
+                    .font(theme.font(10))
+                    .foregroundStyle(theme.palette.textTertiary)
+            }
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(RoundedRectangle(cornerRadius: 5).fill(theme.palette.cardBackground))
+        .overlay(RoundedRectangle(cornerRadius: 5).stroke(theme.palette.divider, lineWidth: 1))
     }
 
     private var statusText: String {

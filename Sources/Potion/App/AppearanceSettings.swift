@@ -11,10 +11,22 @@ struct AppearanceSettings: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                section("Appearance mode") {
+                    Picker("Appearance mode", selection: $theme.mode) {
+                        ForEach(AppearanceMode.allCases) { m in
+                            Text(m.displayName).tag(m)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                }
+
+                Divider()
+
                 section("Skin") {
                     LazyVGrid(columns: columns, spacing: 10) {
                         ForEach(Skin.allCases) { skin in
-                            SkinTile(skin: skin, isSelected: theme.skin == skin) {
+                            SkinTile(skin: skin, mode: theme.mode, isSelected: theme.skin == skin) {
                                 theme.skin = skin
                             }
                         }
@@ -78,12 +90,13 @@ struct AppearanceSettings: View {
 /// card, and the skin's own selection mark and motif glyph.
 private struct SkinTile: View {
     let skin: Skin
+    let mode: AppearanceMode
     let isSelected: Bool
     let action: () -> Void
 
     @State private var isHovering = false
 
-    private var palette: PotionPalette { skin.palette }
+    private var palette: PotionPalette { skin.palette(mode: mode) }
 
     var body: some View {
         Button(action: action) {

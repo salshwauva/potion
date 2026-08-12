@@ -44,12 +44,30 @@ enum TabSignature {
     case ribbon
 }
 
+enum AppearanceMode: String, CaseIterable, Identifiable, Codable {
+    case dark
+    case light
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .dark: return "Dark (Candlelit)"
+        case .light: return "Light (Parchment)"
+        }
+    }
+}
+
 /// A complete look: surfaces, accents, motif, and the shape of selection.
 ///
 /// Surfaces and text are derived rather than listed. Each skin supplies a hue
 /// and a saturation, and the ladder below does the rest, so no skin can drift
 /// off the spacing or fall below AA. See `.interface-design/system.md`.
 enum Skin: String, CaseIterable, Identifiable, Codable {
+    case obsidian
+    case bloodMoon
+    case emerald
+    case nebula
     case cauldron
     case apothecary
     case moss
@@ -61,6 +79,10 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
 
     var displayName: String {
         switch self {
+        case .obsidian: return "Void Obsidian & Moonstone"
+        case .bloodMoon: return "Blood Moon & Crimson"
+        case .emerald: return "Shadow Emerald & Poison"
+        case .nebula: return "Celestial Nebula & Amethyst"
         case .cauldron: return "Cauldron"
         case .apothecary: return "Apothecary"
         case .moss: return "Moss & Moonlight"
@@ -72,6 +94,10 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
 
     var blurb: String {
         switch self {
+        case .obsidian: return "Midnight teal, obsidian dark, and glowing moonstone cyan."
+        case .bloodMoon: return "Deep eclipse maroon, crimson ruby, and warm copper."
+        case .emerald: return "Deep forest velvet, luminous emerald, and jade sparkle."
+        case .nebula: return "Rich royal violet, electric amethyst, and cosmic gold."
         case .cauldron: return "Plum and rose. The original."
         case .apothecary: return "Ink blue and brass. Reads as a tool."
         case .moss: return "Forest dark and sage. Herbal, not spooky."
@@ -83,6 +109,10 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
 
     var signature: TabSignature {
         switch self {
+        case .obsidian: return .moonPhase
+        case .bloodMoon: return .ribbon
+        case .emerald: return .bracket
+        case .nebula: return .star
         case .cauldron: return .rule
         case .apothecary: return .bracket
         case .moss: return .moonPhase
@@ -95,6 +125,10 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
     /// The glyphs this skin draws in empty states, strongest first.
     var motif: [WitchyGlyph] {
         switch self {
+        case .obsidian: return [.crystal, .moon, .sparkle]
+        case .bloodMoon: return [.cauldron, .candle, .key]
+        case .emerald: return [.flask, .mushroom, .moth]
+        case .nebula: return [.sparkle, .crystal, .broom]
         case .cauldron: return [.cauldron, .sparkle, .moon]
         case .apothecary: return [.flask, .key, .candle]
         case .moss: return [.mushroom, .moth, .moon]
@@ -106,25 +140,20 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
 
     // MARK: Derivation
 
-    /// Lightness of the five surface rungs, darkest first. Adjacent rungs sit 4
-    /// to 8 points apart: enough to read as structure, quiet in isolation.
-    private static let surfaceLightness: [Double] = [0.075, 0.115, 0.155, 0.235, 0.300]
+    private static let surfaceLightnessDark: [Double] = [0.075, 0.115, 0.155, 0.235, 0.300]
+    private static let surfaceLightnessLight: [Double] = [0.97, 0.93, 0.88, 0.82, 0.76]
 
-    /// Lightness of the four text levels. Solved so the tightest pair across
-    /// every skin (tertiary on card) clears 5:1 and muted clears 3.2:1.
-    /// Primary sits at 0.88, not near-white. Light text on a surface this deep
-    /// blooms: the brighter the glyph, the more it bleeds into the background
-    /// and the softer its edges read. Pulling it down sharpens the letterforms
-    /// and still leaves 13:1.
-    private static let textLightness: [Double] = [0.88, 0.78, 0.70, 0.58]
+    private static let textLightnessDark: [Double] = [0.88, 0.78, 0.70, 0.58]
+    private static let textLightnessLight: [Double] = [0.12, 0.26, 0.38, 0.52]
 
-    /// Text carries only a trace of the skin's hue. The surfaces are where the
-    /// color lives; text tinted as far as the surfaces sits too close to them and
-    /// reads soft, which is most of what made the panels hard on the eye.
     private static let textSaturation: Double = 0.12
 
     private var hue: Double {
         switch self {
+        case .obsidian: return 195
+        case .bloodMoon: return 352
+        case .emerald: return 160
+        case .nebula: return 275
         case .cauldron: return 268
         case .apothecary: return 214
         case .moss: return 148
@@ -136,6 +165,10 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
 
     private var surfaceSaturation: Double {
         switch self {
+        case .obsidian: return 0.35
+        case .bloodMoon: return 0.38
+        case .emerald: return 0.36
+        case .nebula: return 0.36
         case .cauldron: return 0.34
         case .apothecary: return 0.36
         case .moss: return 0.30
@@ -147,6 +180,10 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
 
     private var accentRGB: RGB {
         switch self {
+        case .obsidian: return (0.35, 0.90, 0.95)
+        case .bloodMoon: return (1.00, 0.32, 0.42)
+        case .emerald: return (0.25, 0.92, 0.65)
+        case .nebula: return (0.82, 0.48, 1.00)
         case .cauldron: return (1.00, 0.40, 0.70)
         case .apothecary: return (0.91, 0.69, 0.29)
         case .moss: return (0.56, 0.86, 0.63)
@@ -159,6 +196,10 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
     /// The second accent: links, the working directory, glyph fills.
     private var accentSoftRGB: RGB {
         switch self {
+        case .obsidian: return (0.70, 0.85, 1.00)
+        case .bloodMoon: return (0.95, 0.72, 0.45)
+        case .emerald: return (0.78, 0.92, 0.75)
+        case .nebula: return (0.95, 0.82, 0.48)
         case .cauldron: return (0.82, 0.71, 1.00)
         case .apothecary: return (0.62, 0.77, 0.91)
         case .moss: return (0.90, 0.89, 0.71)
@@ -171,6 +212,10 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
     /// Highlights inside the pixel glyphs: bubbles, flames, wing spots.
     private var sparkleRGB: RGB {
         switch self {
+        case .obsidian: return (0.90, 0.95, 1.00)
+        case .bloodMoon: return (1.00, 0.88, 0.55)
+        case .emerald: return (0.92, 0.98, 0.70)
+        case .nebula: return (1.00, 0.94, 0.72)
         case .cauldron: return (1.00, 0.87, 0.47)
         case .apothecary: return (0.96, 0.91, 0.76)
         case .moss: return (0.96, 0.94, 0.78)
@@ -183,32 +228,48 @@ enum Skin: String, CaseIterable, Identifiable, Codable {
     /// Green reads as success everywhere except on the green skin, where it
     /// would sit on its own hue. Moss lifts it to a pale mint instead.
     private var successRGB: RGB {
-        self == .moss ? (0.80, 0.98, 0.87) : (0.44, 0.91, 0.70)
+        (self == .moss || self == .emerald) ? (0.80, 0.98, 0.87) : (0.44, 0.91, 0.70)
     }
 
     var palette: PotionPalette {
-        let surfaces = Self.surfaceLightness.enumerated().map { index, lightness in
-            hsl(hue, surfaceSaturation * (1 - Double(index) * 0.05), lightness)
+        palette(mode: .dark)
+    }
+
+    func palette(mode: AppearanceMode) -> PotionPalette {
+        let isLight = mode == .light
+        let surfaceLightnessList = isLight ? Self.surfaceLightnessLight : Self.surfaceLightnessDark
+        let textLightnessList = isLight ? Self.textLightnessLight : Self.textLightnessDark
+        let satMult = isLight ? 0.18 : surfaceSaturation
+
+        let surfaces = surfaceLightnessList.enumerated().map { index, lightness in
+            hsl(hue, satMult * (1 - Double(index) * 0.05), lightness)
         }
-        let text = Self.textLightness.map { hsl(hue, Self.textSaturation, $0) }
+        let text = textLightnessList.map { hsl(hue, Self.textSaturation, $0) }
+
+        let rawAccent = color(accentRGB)
+        let rawAccentSoft = color(accentSoftRGB)
+        let accent = isLight ? hsl(hue, 0.75, 0.35) : rawAccent
+        let accentSoft = isLight ? hsl(hue, 0.65, 0.40) : rawAccentSoft
+
         return PotionPalette(
             terminalBackground: surfaces[0],
             panelBackground: surfaces[1],
             windowChrome: surfaces[2],
             cardBackground: surfaces[3],
             cardBackgroundRaised: surfaces[4],
-            accent: color(accentRGB),
-            accentSoft: color(accentSoftRGB),
-            rim: lightened(accentRGB, 0.22),
-            sparkle: color(sparkleRGB),
+            accent: accent,
+            accentSoft: accentSoft,
+            rim: isLight ? accent.opacity(0.7) : lightened(accentRGB, 0.22),
+            sparkle: isLight ? hsl(hue, 0.85, 0.30) : color(sparkleRGB),
             textPrimary: text[0],
             textSecondary: text[1],
             textTertiary: text[2],
             textMuted: text[3],
-            terminalForeground: hsl(hue, Self.textSaturation, 0.90),
-            success: color(successRGB),
-            running: Color(red: 1.00, green: 0.79, blue: 0.42),
-            failure: Color(red: 1.00, green: 0.50, blue: 0.61)
+            terminalForeground: isLight ? hsl(hue, Self.textSaturation, 0.10) : hsl(hue, Self.textSaturation, 0.90),
+            success: isLight ? Color(red: 0.15, green: 0.55, blue: 0.32) : color(successRGB),
+            running: isLight ? Color(red: 0.78, green: 0.48, blue: 0.10) : Color(red: 1.00, green: 0.79, blue: 0.42),
+            failure: isLight ? Color(red: 0.78, green: 0.20, blue: 0.28) : Color(red: 1.00, green: 0.50, blue: 0.61),
+            divider: isLight ? Color.black.opacity(0.12) : Color.white.opacity(0.14)
         )
     }
 }
@@ -245,7 +306,7 @@ struct PotionPalette: Equatable {
     let running: Color
     let failure: Color
 
-    let divider = Color.white.opacity(0.14)
+    let divider: Color
 
     // AppKit forms, for SwiftTerm's native color properties.
     var terminalBackgroundNS: NSColor { NSColor(terminalBackground) }
@@ -342,10 +403,15 @@ final class ThemeManager: ObservableObject {
         static let skin = "appearance.skin"
         static let pairing = "appearance.fontPairing"
         static let textSize = "appearance.textSize"
+        static let mode = "appearance.mode"
     }
 
     @Published var skin: Skin {
         didSet { UserDefaults.standard.set(skin.rawValue, forKey: Key.skin) }
+    }
+
+    @Published var mode: AppearanceMode {
+        didSet { UserDefaults.standard.set(mode.rawValue, forKey: Key.mode) }
     }
 
     @Published var pairing: FontPairing {
@@ -356,14 +422,19 @@ final class ThemeManager: ObservableObject {
         didSet { UserDefaults.standard.set(textSize.rawValue, forKey: Key.textSize) }
     }
 
-    var palette: PotionPalette { skin.palette }
+    var palette: PotionPalette { skin.palette(mode: mode) }
 
     init() {
         let defaults = UserDefaults.standard
-        skin = defaults.string(forKey: Key.skin).flatMap(Skin.init(rawValue:)) ?? .alchemist
+        skin = defaults.string(forKey: Key.skin).flatMap(Skin.init(rawValue:)) ?? .obsidian
+        mode = defaults.string(forKey: Key.mode).flatMap(AppearanceMode.init(rawValue:)) ?? .dark
         pairing = defaults.string(forKey: Key.pairing).flatMap(FontPairing.init(rawValue:)) ?? .glow
         textSize = defaults.string(forKey: Key.textSize).flatMap(TextSize.init(rawValue:)) ?? .standard
         Self.registerBundledFonts()
+    }
+
+    func toggleMode() {
+        mode = (mode == .dark) ? .light : .dark
     }
 
     func cycleFontPairing() {

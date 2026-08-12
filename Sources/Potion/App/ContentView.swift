@@ -12,16 +12,29 @@ struct ContentView: View {
     @EnvironmentObject private var theme: ThemeManager
 
     var body: some View {
-        VStack(spacing: 0) {
-            WindowChromeBar(controller: controller)
-                .frame(height: 38)
-            HSplitView {
-                terminalColumn
-                    .frame(minWidth: 420, minHeight: 260)
-                CompanionPanel(controller: controller)
+        ZStack {
+            VStack(spacing: 0) {
+                WindowChromeBar(controller: controller)
+                    .frame(height: 38)
+                
+                if controller.isSidebarVisible {
+                    HSplitView {
+                        terminalColumn
+                            .frame(minWidth: 420, minHeight: 260)
+                        CompanionPanel(controller: controller)
+                            .frame(minWidth: 300, maxWidth: 440)
+                    }
+                } else {
+                    terminalColumn
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+            .background(theme.palette.panelBackground)
+
+            if controller.showQuickHelpModal {
+                QuickHelpModal(controller: controller)
             }
         }
-        .background(theme.palette.panelBackground)
         .onAppear {
             DispatchQueue.main.async { controller.updateFocus() }
         }

@@ -19,3 +19,6 @@ Resources/zsh/.zsh_history
 
 # Node tooling for the spec build step (added in P3)
 node_modules/
+
+# Local UI backup, not part of the source tree
+Backup/

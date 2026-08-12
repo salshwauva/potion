@@ -9,12 +9,13 @@ struct CompanionPanel: View {
     @EnvironmentObject private var theme: ThemeManager
 
     enum Section: Hashable {
-        case history
-        case docs
+        case translator
+        case suggestions
+        case help
         case errors
     }
 
-    @State private var section: Section = .history
+    @State private var section: Section = .translator
 
     var body: some View {
         section(for: section)
@@ -35,20 +36,27 @@ struct CompanionPanel: View {
             .frame(minWidth: 320)
             .background(theme.palette.panelBackground)
             .onChange(of: controller.docsCommand) { _, newValue in
-                if newValue != nil { section = .docs }
+                if newValue != nil { section = .help }
             }
             .onChange(of: controller.focusedErrorId) { _, newValue in
                 if newValue != nil { section = .errors }
+            }
+            .onChange(of: controller.draft) { _, newValue in
+                if !newValue.isEmpty && section == .suggestions {
+                    section = .translator
+                }
             }
     }
 
     @ViewBuilder
     private func section(for section: Section) -> some View {
         switch section {
-        case .history:
-            HistoryPanel(controller: controller)
-        case .docs:
-            DocsPanel(controller: controller)
+        case .translator:
+            TranslatorPanel(controller: controller)
+        case .suggestions:
+            SuggestionsPanel(controller: controller)
+        case .help:
+            HelpPanel(controller: controller)
         case .errors:
             ErrorsPanel(controller: controller)
         }

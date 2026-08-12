@@ -13,9 +13,9 @@ struct PixelTabBar: View {
     @EnvironmentObject private var theme: ThemeManager
 
     private let tabs: [(CompanionPanel.Section, String)] = [
-        (.history, "HISTORY"),
-        (.docs, "DOCS"),
-        (.errors, "ERRORS"),
+        (.translator, "TRANSLATION"),
+        (.suggestions, "SUGGEST"),
+        (.help, "HELP")
     ]
 
     var body: some View {

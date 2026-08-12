@@ -24,29 +24,6 @@ struct CommandText: View {
     }
 
     private var attributed: AttributedString {
-        let base = FolderPath.filesystemPath(from: cwd ?? FileManager.default.currentDirectoryPath)
-        let characters = Array(command)
-        var result = AttributedString()
-        var cursor = 0
-
-        for token in Tokenizer.tokenize(command) {
-            if token.start > cursor {
-                result.append(AttributedString(String(characters[cursor..<token.start])))
-            }
-            var run = AttributedString(token.raw)
-            if token.kind == .word, let url = FolderPath.folderURL(token: token.value, base: base) {
-                run.foregroundColor = theme.palette.accent
-                run.underlineStyle = .single
-                run.link = url
-            } else {
-                run.foregroundColor = theme.palette.textPrimary
-            }
-            result.append(run)
-            cursor = token.end
-        }
-        if cursor < characters.count {
-            result.append(AttributedString(String(characters[cursor...])))
-        }
-        return result
+        CommandHighlighter.highlight(command, palette: theme.palette, cwd: cwd)
     }
 }
