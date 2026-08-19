@@ -81,7 +81,7 @@ struct SuggestionsPanel: View {
                     .foregroundStyle(theme.palette.textPrimary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(RoundedRectangle(cornerRadius: 5).fill(theme.palette.cardBackgroundRaised))
+                    .panelCard(radius: 5, raised: true)
                 
                 Spacer()
 
@@ -93,7 +93,7 @@ struct SuggestionsPanel: View {
             }
         }
         .padding(11)
-        .background(RoundedRectangle(cornerRadius: 8).fill(theme.palette.cardBackground))
+        .panelCard(radius: 8)
     }
 
     private var learningTipsSection: some View {
@@ -110,7 +110,7 @@ struct SuggestionsPanel: View {
                 tipRow(icon: "command", title: "Quick Shortcuts", desc: "Use ⌘H for Help Cheatsheet, ⌘B to toggle Sidebar, and ⌘K to clear terminal.")
             }
             .padding(11)
-            .background(RoundedRectangle(cornerRadius: 8).fill(theme.palette.cardBackground))
+            .panelCard(radius: 8)
         }
     }
 

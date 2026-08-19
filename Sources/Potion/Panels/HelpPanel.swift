@@ -155,7 +155,7 @@ struct HelpPanel: View {
                                 .foregroundStyle(theme.palette.textTertiary)
                         }
                         .padding(10)
-                        .background(RoundedRectangle(cornerRadius: 6).fill(theme.palette.cardBackground))
+                        .panelCard(radius: 6)
                     }
                     .buttonStyle(.plain)
                 }
@@ -181,7 +181,7 @@ struct HelpPanel: View {
             }
         }
         .padding(11)
-        .background(RoundedRectangle(cornerRadius: 8).fill(theme.palette.cardBackground))
+        .panelCard(radius: 8)
     }
 
     private func shortcutRow(keys: String, desc: String) -> some View {
@@ -190,7 +190,7 @@ struct HelpPanel: View {
                 .font(theme.font(10, weight: .semibold, mono: true))
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(RoundedRectangle(cornerRadius: 4).fill(theme.palette.cardBackgroundRaised))
+                .panelCard(radius: 4, raised: true)
                 .foregroundStyle(theme.palette.accentSoft)
             Text(desc)
                 .font(theme.font(11))
@@ -257,7 +257,7 @@ struct HelpPanel: View {
                     .foregroundStyle(theme.palette.accentSoft)
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(theme.palette.cardBackground))
+                    .panelCard(radius: 6)
                 
                 Button("Insert") {
                     controller.insertIntoInput(example.command)
@@ -272,7 +272,7 @@ struct HelpPanel: View {
             }
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 7).fill(theme.palette.cardBackgroundRaised))
+        .panelCard(radius: 7, raised: true)
     }
 
     private func missingPage(for command: String) -> some View {

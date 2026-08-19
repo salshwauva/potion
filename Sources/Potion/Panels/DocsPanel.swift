@@ -171,7 +171,7 @@ struct DocsPanel: View {
                     .textSelection(.enabled)
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(theme.palette.cardBackground))
+                    .panelCard(radius: 6)
                 Button("Insert") { controller.insertIntoInput(example.command) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)

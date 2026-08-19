@@ -16,20 +16,9 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 WindowChromeBar(controller: controller)
                     .frame(height: 38)
-                
-                if controller.isSidebarVisible {
-                    HSplitView {
-                        terminalColumn
-                            .frame(minWidth: 420, minHeight: 260)
-                        CompanionPanel(controller: controller)
-                            .frame(minWidth: 300, maxWidth: 440)
-                    }
-                } else {
-                    terminalColumn
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
+
+                workspace
             }
-            .background(theme.palette.panelBackground)
 
             if controller.showQuickHelpModal {
                 QuickHelpModal(controller: controller)
@@ -38,6 +27,24 @@ struct ContentView: View {
         .onAppear {
             DispatchQueue.main.async { controller.updateFocus() }
         }
+    }
+
+    @ViewBuilder
+    private var workspace: some View {
+        Group {
+            if controller.isSidebarVisible {
+                HSplitView {
+                    terminalColumn
+                        .frame(minWidth: 420, minHeight: 260)
+                    CompanionPanel(controller: controller)
+                        .frame(minWidth: 300, maxWidth: 440)
+                }
+            } else {
+                terminalColumn
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .background(theme.palette.panelBackground)
     }
 
     private var terminalColumn: some View {

@@ -549,3 +549,24 @@ struct PotionLinkButtonStyle: ButtonStyle {
 extension ButtonStyle where Self == PotionLinkButtonStyle {
     static var potionLink: PotionLinkButtonStyle { PotionLinkButtonStyle() }
 }
+
+extension Color {
+    /// Mixes toward another color in sRGB.
+    ///
+    /// macOS 14 has no color mixing of its own and the palette vends finished
+    /// colors, so shades are derived here. Everything mixed comes from the
+    /// active skin, which is what keeps derived surfaces on palette when the
+    /// skin changes underneath them.
+    func mixed(with other: Color, amount: Double) -> Color {
+        guard let base = NSColor(self).usingColorSpace(.sRGB),
+              let target = NSColor(other).usingColorSpace(.sRGB)
+        else { return self }
+
+        let t = CGFloat(min(max(amount, 0), 1))
+        return Color(
+            red: Double(base.redComponent + (target.redComponent - base.redComponent) * t),
+            green: Double(base.greenComponent + (target.greenComponent - base.greenComponent) * t),
+            blue: Double(base.blueComponent + (target.blueComponent - base.blueComponent) * t)
+        )
+    }
+}

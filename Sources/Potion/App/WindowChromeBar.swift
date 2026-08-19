@@ -5,6 +5,7 @@ import SwiftUI
 /// bar hidden, this carries the Potion identity: the mark on the left (with room
 /// for the traffic lights) and the working directory on the right. The name
 /// lives here, in the chrome, never in the interface copy below it.
+
 struct WindowChromeBar: View {
     @ObservedObject var controller: TerminalController
     @EnvironmentObject private var theme: ThemeManager

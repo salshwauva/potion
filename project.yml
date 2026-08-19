@@ -45,6 +45,8 @@ targets:
         type: folder
       - path: Resources/fonts
         type: folder
+      - path: Resources/art
+        type: folder
     dependencies:
       - target: PotionCore
       - package: SwiftTerm

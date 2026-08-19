@@ -94,14 +94,31 @@ struct MascotNook: View {
     @EnvironmentObject private var theme: ThemeManager
 
     var body: some View {
-        HStack(spacing: 10) {
-            MascotView(state: state)
-            Text(caption)
-                .font(theme.font(13))
-                .foregroundStyle(theme.palette.textSecondary)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
+        // The cauldron is the mascot when its render is bundled. The cat is the
+        // fallback, and stays the app's icon either way. The pot leads its own
+        // column because the brew needs the width to read; the cat sat beside
+        // its caption because it did not.
+        if CauldronArtwork.pot != nil {
+            VStack(spacing: 6) {
+                CauldronMascot(state: state)
+                Text(caption)
+                    .font(theme.font(13))
+                    .foregroundStyle(theme.palette.textSecondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity)
+        } else {
+            HStack(spacing: 10) {
+                MascotView(state: state)
+                Text(caption)
+                    .font(theme.font(13))
+                    .foregroundStyle(theme.palette.textSecondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
         }
     }
 

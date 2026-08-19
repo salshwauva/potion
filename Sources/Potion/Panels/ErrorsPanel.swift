@@ -116,7 +116,7 @@ private struct ErrorCardView: View {
                     .textSelection(.enabled)
                     .padding(7)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(theme.palette.cardBackground))
+                    .panelCard(radius: 6)
                 Button("Insert") { onInsert(fix) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)

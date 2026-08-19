@@ -19,7 +19,7 @@ struct PixelTabBar: View {
     ]
 
     var body: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: 3) {
             ForEach(tabs, id: \.0) { section, label in
                 TabButton(
                     label: label,
@@ -28,6 +28,8 @@ struct PixelTabBar: View {
                 )
             }
         }
+        .padding(3)
+        .panelTrack(radius: 10)
     }
 }
 
@@ -60,10 +62,28 @@ private struct TabButton: View {
     /// corners instead of running past them.
     private var background: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 6).fill(fill)
-            if isSelected { mark }
+            if isSelected {
+                RoundedRectangle(cornerRadius: 7, style: .continuous).fill(fillShape)
+            } else {
+                RoundedRectangle(cornerRadius: 7, style: .continuous).fill(fill)
+            }
+
+            // The selected tab is the only thing in the track that rises out of
+            // it, so it takes the lit edge that goes with being raised.
+            if isSelected {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [theme.palette.rim.opacity(0.30), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 1
+                    )
+                mark
+            }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
         .animation(.easeOut(duration: 0.12), value: isSelected)
         .animation(.easeOut(duration: 0.12), value: isHovering)
     }
@@ -121,9 +141,20 @@ private struct TabButton: View {
             .clipShape(Circle())
     }
 
+    private var fillShape: LinearGradient {
+        LinearGradient(
+            colors: [
+                theme.palette.cardBackground.mixed(with: theme.palette.cardBackgroundRaised, amount: 0.6),
+                theme.palette.cardBackground
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+
     private var fill: Color {
         if isSelected { return theme.palette.cardBackground }
-        return isHovering ? theme.palette.cardBackground.opacity(0.45) : .clear
+        return isHovering ? theme.palette.cardBackground.opacity(0.4) : .clear
     }
 }
 

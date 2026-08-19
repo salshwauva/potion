@@ -113,7 +113,7 @@ private struct HistoryCard: View {
         }
         .padding(9)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 7).fill(theme.palette.cardBackground))
+        .panelCard(radius: 7)
     }
 
     private var statusBadge: some View {

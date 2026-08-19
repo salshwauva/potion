@@ -66,7 +66,7 @@ struct TranslatorPanel: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(RoundedRectangle(cornerRadius: 8).fill(theme.palette.cardBackground))
+        .panelCard(radius: 8)
     }
 
     private var heroTranslationCard: some View {
@@ -91,7 +91,7 @@ struct TranslatorPanel: View {
                 SubtitleText(subtitle: sub, size: 14)
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(theme.palette.cardBackgroundRaised))
+                    .panelCard(radius: 6, raised: true)
             } else {
                 Text(activeLine)
                     .font(theme.font(13, mono: true))
@@ -99,7 +99,7 @@ struct TranslatorPanel: View {
             }
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 8).fill(theme.palette.cardBackground))
+        .panelCard(radius: 8)
     }
 
     private var tokenBreakdownSection: some View {
@@ -145,7 +145,7 @@ struct TranslatorPanel: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 7).fill(theme.palette.cardBackground))
+        .panelCard(radius: 7)
     }
 
     private func tokenColor(for category: String) -> Color {
