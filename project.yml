@@ -20,7 +20,7 @@ settings:
 packages:
   SwiftTerm:
     url: https://github.com/migueldeicaza/SwiftTerm
-    from: "1.13.0"
+    from: "1.15.0"
 
 targets:
   PotionCore:

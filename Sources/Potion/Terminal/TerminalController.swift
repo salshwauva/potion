@@ -209,11 +209,15 @@ final class TerminalController: NSObject, ObservableObject, LocalProcessTerminal
         let shellName = (shell as NSString).lastPathComponent
         let environment = Self.buildEnvironment()
 
+        // A bundle launched from Finder or the Dock inherits "/" as its working
+        // directory, and SIP makes the root volume read-only. Start the shell in
+        // the home directory, which is what Terminal.app does.
         terminalView.startProcess(
             executable: shell,
             args: [],
             environment: environment,
-            execName: "-\(shellName)"
+            execName: "-\(shellName)",
+            currentDirectory: NSHomeDirectory()
         )
 
         hasStarted = true
