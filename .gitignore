@@ -22,3 +22,9 @@ node_modules/
 
 # Local UI backup, not part of the source tree
 Backup/
+
+# agent files
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+.claude/
