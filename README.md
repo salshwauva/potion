@@ -1,72 +1,78 @@
 # Potion
 
-A subtitled terminal for macOS. Potion runs a real zsh shell and renders live
-plain English translations of every command, as it is typed and attached to
-every command in history. The goal is fluency through immersion plus
-translation, not through forms or tutorials.
+Potion is a macOS terminal with plain-English command subtitles. It runs a zsh shell and explains supported commands as they enter the input bar.
 
-Potion is a genuine terminal. Friendly features (subtitles, autocomplete, docs,
-error explanations) surround and annotate the shell. They never replace or hide
-it.
+The same command parser supplies subtitles and autocomplete. A history panel keeps command records, while nearby panels show command documentation and explanations for recognized errors.
 
-## Status
+## Features
 
-Complete. Phases P0 through P7 are implemented, followed by a design pass: raw
-terminal, shell integration and command tracking, input bar and history panel,
-spec engine and autocomplete, subtitle engine and live subtitle bar, docs panel
-with bundled tldr pages, error explainer cards, and the Potion theme with its
-reactive mascot.
+- A SwiftTerm terminal with an interactive login shell and support for terminal applications.
+- Command subtitles based on local specifications and syntax rules.
+- Autocomplete for supported commands, flags, and paths.
+- Offline command examples from bundled tldr pages.
+- Rule-based error cards and a themed interface with a reactive mascot.
 
-The app spawns a login and interactive zsh in a SwiftTerm backed PTY. TUI
-programs such as vim and htop run untouched. Docs work offline from 4,952
-bundled tldr pages. 70 unit tests cover the tokenizer, spec engine, subtitle
-renderer, error rule engine, tldr parser, and terminal parsers.
+The explanations run locally. The app does not require a model service or an API key.
 
 ## Requirements
 
-- macOS 14 or later
-- Xcode 16 or later
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
+- macOS 14 or later.
+- Xcode 16 or later, selected as the active developer toolchain.
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
-## Build
+## Build and run
 
-The Xcode project is generated from `project.yml` and is not checked in.
+The repository uses `project.yml` to generate the Xcode project:
 
 ```sh
-# Point the toolchain at the full Xcode (only needed if xcode-select
-# currently points at the Command Line Tools).
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-
-# Generate Potion.xcodeproj from project.yml.
 xcodegen generate
+open Potion.xcodeproj
+```
 
-# Build.
+Select the `Potion` scheme in Xcode and run the app. A command-line build uses the same scheme:
+
+```sh
 xcodebuild -project Potion.xcodeproj -scheme Potion -configuration Debug build
+```
 
-# Run the tests.
+If the active toolchain points to the Command Line Tools, select the full Xcode installation:
+
+```sh
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+```
+
+## Tests
+
+```sh
 xcodebuild -project Potion.xcodeproj -scheme Potion test
 ```
 
-Open `Potion.xcodeproj` in Xcode to run the app with the Run button.
+The tests cover tokenization, command specifications, subtitles, error rules, documentation, and terminal events.
 
 ## Architecture
 
-Logic and UI are split into two targets so the translation engine is unit
-testable without AppKit or a running app.
+`PotionCore` contains the parser, command specifications, subtitle rules, error rules, and terminal event models. It does not depend on AppKit.
 
-- `PotionCore`: pure logic. Tokenizer, spec walker, subtitle renderer, syntax
-  table, rule engine, and terminal parsers. No AppKit.
-- `Potion`: the SwiftUI app. Terminal wrapper, input bar, companion panels,
-  theme, mascot. Depends on `PotionCore`.
+`Potion` contains the SwiftUI app and SwiftTerm integration. It connects the shell to the input bar, history, and companion panels.
 
-Autocomplete and subtitle translation run on the same tokenizer and the same
-spec engine, so both read a command line through one source of truth rather
-than two divergent parsers.
+| Path | Purpose |
+| --- | --- |
+| `Sources/PotionCore/` | Command logic and terminal event models |
+| `Sources/Potion/` | App interface and terminal integration |
+| `Resources/data/` | Command specifications and explanation rules |
+| `Resources/tldr/` | Offline command documentation |
+| `Tests/PotionCoreTests/` | Unit tests |
 
-Design choices where the chosen approach was not the obvious one are recorded
-in [docs/decisions.md](docs/decisions.md), along with the costs accepted and
-the scope deliberately deferred.
+[Design decisions](docs/decisions.md) describes the module split and shell integration.
 
-## License and attributions
+## Status and limits
 
-See [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
+The repository contains the terminal, subtitles, autocomplete, documentation, error cards, and theme. It builds from source.
+
+Subtitle coverage depends on the bundled command specifications. Error cards only cover recognized patterns. The shell can run commands outside that coverage.
+
+Potion executes shell commands with the current user's permissions. A subtitle does not establish that a command is safe.
+
+## Third-party credits
+
+[ATTRIBUTIONS.md](ATTRIBUTIONS.md) lists SwiftTerm, tldr pages, and the bundled fonts with their licenses.
